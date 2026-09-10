@@ -29,7 +29,6 @@ export class AuthController {
 
         return {
             ...user,
-            password: null
         }
     }
 }

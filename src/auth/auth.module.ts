@@ -8,6 +8,7 @@ import { UserModule } from '../user/user.module.js';
 import { AuthGuard } from './guards/auth.guard.js';
 
 @Module({
+  exports:[AuthGuard, JwtModule],
   imports:[
     UserModule,
     JwtModule.registerAsync({
