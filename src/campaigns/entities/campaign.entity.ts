@@ -23,6 +23,9 @@ export class CampaignEntity {
     @Column({type: "decimal", precision: 12, scale:2, default: 0})
     collectedAmount: number;
 
+    @Column({default: 0})
+    remainingAmount: number;
+
     @Column({nullable: true})
     image: string;
 

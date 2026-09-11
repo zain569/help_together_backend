@@ -2,8 +2,8 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateCampaignDto } from './dto/create-campaign.dto.js';
 import { UpdateCampaignDto } from './dto/update-campaign.dto.js';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { CampaignEntity } from './entities/campaign.entity.js';
+import { ILike, Repository } from 'typeorm';
+import { CampaignEntity, compainStatus } from './entities/campaign.entity.js';
 
 @Injectable()
 export class CampaignsService {
@@ -20,9 +20,18 @@ export class CampaignsService {
     };
   }
 
-  async findAll() {
-    const campaigns = await this.compainRep.find();
-    return { campaigns };
+  async findAll(page: number, limit: number) {
+    const [campaigns, total] = await this.compainRep.findAndCount({
+      skip: (page - 1) * limit,
+      take: limit
+    });
+    return {
+      campaigns,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
   }
 
   async findOne(id: string) {
@@ -63,5 +72,22 @@ export class CampaignsService {
       id,
       title: campaign.title,
     };
+  }
+
+  async searchByTitle(title: string) {
+    const campaigns = await this.compainRep.find({
+      where: {
+        title: ILike(`%${title}%`)
+      }
+    })
+    return { campaigns };
+  }
+
+  async findByStatus(status: compainStatus) {
+    return await this.compainRep.find({
+      where: {
+        status,
+      },
+    });
   }
 }
