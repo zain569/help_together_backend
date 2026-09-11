@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateCampaignDto } from './dto/create-campaign.dto.js';
 import { UpdateCampaignDto } from './dto/update-campaign.dto.js';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -26,15 +26,42 @@ export class CampaignsService {
   }
 
   async findOne(id: string) {
-    const campaign = await this.compainRep.findOne({ where: {id: id } });
+    const campaign = await this.compainRep.findOne({ where: { id: id } });
     return { campaign };
   }
 
-  update(id: number, updateCampaignDto: UpdateCampaignDto) {
-    return `This action updates a #${id} campaign`;
+  async update(id: string, updateCampaignDto: UpdateCampaignDto) {
+    const campaign = await this.compainRep.findOne({
+      where: {
+        id: id
+      }
+    })
+
+    if (!campaign) {
+      throw new NotFoundException(`Campaign with ID ${id} is not found`)
+    }
+
+    Object.assign(campaign, updateCampaignDto);
+
+    const savedCampaign = await this.compainRep.save(campaign);
+    return savedCampaign;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} campaign`;
+  async remove(id: string) {
+    const campaign = await this.compainRep.findOne({
+      where: { id: String(id) },
+    });
+
+    if (!campaign) {
+      throw new NotFoundException(`Campaign with ID ${id} not found`);
+    }
+
+    await this.compainRep.delete(id);
+
+    return {
+      message: 'Campaign deleted successfully',
+      id,
+      title: campaign.title,
+    };
   }
 }

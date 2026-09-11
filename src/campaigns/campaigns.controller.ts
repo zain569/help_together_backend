@@ -30,11 +30,11 @@ export class CampaignsController {
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateCampaignDto: UpdateCampaignDto) {
-    return this.campaignsService.update(+id, updateCampaignDto);
+    return this.campaignsService.update(id, updateCampaignDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.campaignsService.remove(+id);
+    return this.campaignsService.remove(id);
   }
 }
