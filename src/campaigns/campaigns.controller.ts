@@ -45,11 +45,15 @@ findByStatus(@Param('status') status: compainStatus) {
     return this.campaignsService.findOne(id);
   }
 
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateCampaignDto: UpdateCampaignDto) {
     return this.campaignsService.update(id, updateCampaignDto);
   }
 
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.campaignsService.remove(id);

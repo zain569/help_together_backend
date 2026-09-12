@@ -66,11 +66,22 @@ export class DonationService {
     return `This action returns all donation`;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} donation`;
+  async myDonations(id: string) {
+
+    const user = await this.donationRep.find({
+      where: {
+        user: {
+          id: id
+        },
+      },
+      relations: {
+        campaign: true
+      }
+    });
+    return user;
   }
 
-  update(id: number, updateDonationDto: UpdateDonationDto) {
+  update(id: string, updateDonationDto: UpdateDonationDto) {
     return `This action updates a #${id} donation`;
   }
 

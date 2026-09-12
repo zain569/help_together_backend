@@ -21,13 +21,13 @@ export class DonationController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.donationService.findOne(+id);
+  myDontions(@Param('id') id: string) {
+    return this.donationService.myDonations(id);
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateDonationDto: UpdateDonationDto) {
-    return this.donationService.update(+id, updateDonationDto);
+    return this.donationService.update(id, updateDonationDto);
   }
 
   @Delete(':id')
