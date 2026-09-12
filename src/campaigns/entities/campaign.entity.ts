@@ -1,4 +1,6 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { DonationEntity } from "../../donation/entities/donation.entity.js";
+import type { Relation } from "typeorm";
 
 export enum compainStatus {
     Active = 'active',
@@ -17,14 +19,17 @@ export class CampaignEntity {
     @Column({type: 'text'})
     description: string;
 
-    @Column({type: "decimal", precision: 12, scale:2})
+    @Column({ type: "decimal", precision: 12, scale: 2 })
     goalAmount: number;
 
-    @Column({type: "decimal", precision: 12, scale:2, default: 0})
+    @Column({ type: "decimal", precision: 12, scale: 2, default: 0 })
     collectedAmount: number;
 
-    @Column({default: 0})
+    @Column({ type: "decimal", precision: 12, scale: 2, default: 0 })
     remainingAmount: number;
+
+    @OneToMany(() => DonationEntity, (donation) => donation.campaign)
+    donations: Relation<DonationEntity>;
 
     @Column({nullable: true})
     image: string;

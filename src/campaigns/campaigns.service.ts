@@ -12,7 +12,11 @@ export class CampaignsService {
     private readonly compainRep: Repository<CampaignEntity>
   ) { }
   async create(createCampaignDto: CreateCampaignDto) {
-    const campaign = this.compainRep.create(createCampaignDto);
+    const campaign = this.compainRep.create({
+      ...createCampaignDto,
+      collectedAmount: 0,
+      remainingAmount: createCampaignDto.goalAmount,
+    });
 
     const savedCampaign = await this.compainRep.save(campaign)
     return {
@@ -51,6 +55,13 @@ export class CampaignsService {
     }
 
     Object.assign(campaign, updateCampaignDto);
+
+    if (updateCampaignDto.goalAmount !== undefined) {
+      campaign.remainingAmount = Math.max(
+        Number(updateCampaignDto.goalAmount) - Number(campaign.collectedAmount),
+        0,
+      );
+    }
 
     const savedCampaign = await this.compainRep.save(campaign);
     return savedCampaign;

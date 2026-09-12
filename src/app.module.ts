@@ -7,6 +7,7 @@ import { ConfigModule } from '@nestjs/config';
 import { ConfigService } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module.js';
 import { UserModule } from './user/user.module.js';
+import { DonationModule } from './donation/donation.module.js';
 
 @Module({
   imports: [
@@ -42,7 +43,8 @@ import { UserModule } from './user/user.module.js';
         };
       }
     }),
-    AuthModule
+    AuthModule,
+    DonationModule
   ],
   controllers: [AppController],
   providers: [AppService],
