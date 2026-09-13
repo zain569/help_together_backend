@@ -6,7 +6,7 @@ import { AuthGuard } from '../auth/guards/auth.guard.js';
 import { RolesGuard } from './guards/roles.guard.js';
 import { Roles } from './guards/roles.decorator.js';
 import { UserRole } from '../user/user.entity.js';
-import { compainStatus } from './entities/campaign.entity.js';
+import { CampaignStatus } from './entities/campaign.entity.js';
 
 @Controller('campaigns')
 export class CampaignsController {
@@ -36,9 +36,29 @@ export class CampaignsController {
   }
 
   @Get('status/:status')
-findByStatus(@Param('status') status: compainStatus) {
-  return this.campaignsService.findByStatus(status);
-}
+  findByStatus(@Param('status') status: CampaignStatus) {
+    return this.campaignsService.findByStatus(status);
+  }
+
+  @Get('filter')
+  filterCampaigns(
+    @Query('causeId') causeId?: string,
+    @Query('status') status?: string,
+    @Query('zakatEligible') zakatEligible?: string,
+    @Query('urgent') urgent?: string,
+  ) {
+    return this.campaignsService.filterCampaigns(
+      causeId,
+      status,
+      zakatEligible === undefined
+        ? undefined
+        : zakatEligible === 'true',
+
+      urgent === undefined
+        ? undefined
+        : urgent === 'true',
+    );
+  }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
@@ -50,6 +70,16 @@ findByStatus(@Param('status') status: compainStatus) {
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateCampaignDto: UpdateCampaignDto) {
     return this.campaignsService.update(id, updateCampaignDto);
+  }
+
+  @Patch('publish/:id')
+  publish(@Param('id') id: string) {
+    return this.campaignsService.publish(id);
+  }
+
+  @Patch('archive/:id')
+  archive(@Param('id') id: string) {
+    return this.campaignsService.archive(id);
   }
 
   @UseGuards(AuthGuard, RolesGuard)

@@ -3,7 +3,7 @@ import { CreateCampaignDto } from './dto/create-campaign.dto.js';
 import { UpdateCampaignDto } from './dto/update-campaign.dto.js';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ILike, Repository } from 'typeorm';
-import { CampaignEntity, compainStatus } from './entities/campaign.entity.js';
+import { CampaignEntity, CampaignStatus } from './entities/campaign.entity.js';
 
 @Injectable()
 export class CampaignsService {
@@ -94,11 +94,82 @@ export class CampaignsService {
     return { campaigns };
   }
 
-  async findByStatus(status: compainStatus) {
+  async findByStatus(status: CampaignStatus) {
     return await this.compainRep.find({
       where: {
         status,
       },
     });
+  }
+
+  async filterCampaigns(
+    causeId?: string,
+    status?: string,
+    zakatEligible?: boolean,
+    urgent?: boolean,
+  ) {
+    const query = this.compainRep
+      .createQueryBuilder('campaign')
+      .leftJoinAndSelect('campaign.cause', 'cause');
+
+    if (causeId) {
+      query.andWhere('cause.id = :causeId', {
+        causeId,
+      });
+    }
+
+    if (status) {
+      query.andWhere('campaign.status = :status', {
+        status,
+      });
+    }
+
+    if (zakatEligible !== undefined) {
+      query.andWhere('campaign.zakatEligible = :zakatEligible', {
+        zakatEligible,
+      });
+    }
+
+    if (urgent !== undefined) {
+      query.andWhere('campaign.urgent = :urgent', {
+        urgent,
+      });
+    }
+
+    return await query.getMany();
+  }
+
+  async publish(id: string) {
+
+    const campaign = await this.compainRep.findOne({
+      where: {
+        id,
+      },
+    });
+
+    if (!campaign) {
+      throw new NotFoundException('Campaign Not Found');
+    }
+
+    campaign.status = CampaignStatus.PUBLISHED;
+
+    return await this.compainRep.save(campaign);
+  }
+
+  async archive(id: string) {
+
+    const campaign = await this.compainRep.findOne({
+      where: {
+        id,
+      },
+    });
+
+    if (!campaign) {
+      throw new NotFoundException('Campaign Not Found');
+    }
+
+    campaign.status = CampaignStatus.ARCHIVED;
+
+    return await this.compainRep.save(campaign);
   }
 }

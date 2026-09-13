@@ -1,11 +1,14 @@
-import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { DonationEntity } from "../../donation/entities/donation.entity.js";
 import type { Relation } from "typeorm";
+import { CauseEntity } from "../../causes/entities/cause.entity.js";
 
-export enum compainStatus {
-    Active = 'active',
-    Completed = 'completed',
-    Closed = 'close'
+
+export enum CampaignStatus {
+    DRAFT = 'draft',
+    PUBLISHED = 'published',
+    FUNDED = 'funded',
+    ARCHIVED = 'archived',
 }
 
 @Entity('campaigns')
@@ -16,7 +19,7 @@ export class CampaignEntity {
     @Column()
     title: string;
 
-    @Column({type: 'text'})
+    @Column({ type: 'text' })
     description: string;
 
     @Column({ type: "decimal", precision: 12, scale: 2 })
@@ -31,19 +34,31 @@ export class CampaignEntity {
     @OneToMany(() => DonationEntity, (donation) => donation.campaign)
     donations: Relation<DonationEntity>;
 
-    @Column({nullable: true})
+    @ManyToOne(
+        () => CauseEntity,
+        (cause) => cause.campaigns,
+    )
+    cause: Relation<CauseEntity>;
+
+    @Column({ nullable: true })
     image: string;
+
+    @Column({ default: false })
+    zakatEligible: boolean;
+
+    @Column({ default: false })
+    urgent: boolean;
 
     @Column({
         type: 'enum',
-        enum: compainStatus,
-        default: compainStatus.Active
+        enum: CampaignStatus,
+        default: CampaignStatus.PUBLISHED
     })
-    status: compainStatus;
+    status: CampaignStatus;
 
     @CreateDateColumn()
     createdAt: Date;
 
     @UpdateDateColumn()
-    updatedDate:  Date;
+    updatedDate: Date;
 }
