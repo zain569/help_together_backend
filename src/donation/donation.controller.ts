@@ -9,7 +9,7 @@ import { UserRole } from '../user/user.entity.js';
 
 @Controller('donation')
 export class DonationController {
-  constructor(private readonly donationService: DonationService) {}
+  constructor(private readonly donationService: DonationService) { }
 
   @Post()
   @UseGuards(AuthGuard)
@@ -24,21 +24,29 @@ export class DonationController {
     return this.donationService.findAll();
   }
 
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(UserRole.USER || UserRole.ADMIN)
   @Get(':id')
-  findOne(@Param('id') id: string){
+  findOne(@Param('id') id: string) {
     return this.donationService.findOne(id);
   }
 
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(UserRole.USER)
   @Get('mydonation/:id')
   myDontions(@Param('id') id: string) {
     return this.donationService.myDonations(id);
   }
 
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   @Patch('status/:id')
   update(@Param('id') id: string, @Body() updateDonationDto: UpdateDonationDto) {
     return this.donationService.update(id, updateDonationDto);
   }
 
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.donationService.remove(id);

@@ -1,4 +1,4 @@
-import { IsNumber, IsString, IsUUID, Min } from "class-validator";
+import { IsIn, IsNumber, IsString, IsUUID, Min } from "class-validator";
 
 export class CreateDonationDto {
     @IsNumber()
@@ -11,7 +11,7 @@ export class CreateDonationDto {
     @IsUUID()
     campaignId: string;
 
-    @IsString()
+    @IsIn(["fail","complete"])
     paymentStatus: string;
 
     @IsString()
