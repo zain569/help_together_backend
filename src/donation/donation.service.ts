@@ -63,7 +63,8 @@ export class DonationService {
   }
 
   findAll() {
-    return `This action returns all donation`;
+    const donations = this.donationRep.find();
+    return donations;
   }
 
   async myDonations(id: string) {
@@ -81,11 +82,54 @@ export class DonationService {
     return user;
   }
 
-  update(id: string, updateDonationDto: UpdateDonationDto) {
-    return `This action updates a #${id} donation`;
+  async findOne(id: string) {
+    const donation = await this.donationRep.findOne({
+      where: {
+        id: id,
+      },
+      relations: {
+        user: true,
+        campaign: true,
+      }
+    });
+
+    if (!donation) {
+      throw new NotFoundException("Donation Not Found");
+    }
+
+    return donation
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} donation`;
+  async update(id: string, updateDonationDto: UpdateDonationDto) {
+
+    const donation = await this.donationRep.findOne({
+      where: {
+        id: String(id)
+      }
+    });
+
+    if (!donation) {
+      throw new NotFoundException(`Donation with this ${id} not found`)
+    };
+
+    donation.paymentStatus = updateDonationDto.paymentStatus;
+    return await this.donationRep.save(donation);
+  }
+
+  async remove(id: string) {
+    const donation = await this.donationRep.findOne({
+      where: {
+        id: String(id)
+      }
+    });
+
+    if (!donation) {
+      throw new NotFoundException(`Donation with this ${id} not found`)
+    };
+
+    const deleteddonation = await this.donationRep.delete(id)
+    return {
+      message: `campaign on ${id} is Deleted Successsfully`,
+    };
   }
 }

@@ -1,4 +1,6 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateDonationDto } from './create-donation.dto.js';
+import { IsString } from 'class-validator';
 
-export class UpdateDonationDto extends PartialType(CreateDonationDto) {}
+export class UpdateDonationDto {
+    @IsString()
+    paymentStatus: string;
+}
