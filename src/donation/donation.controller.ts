@@ -1,4 +1,5 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req } from '@nestjs/common';
+import type { Request } from 'express';
 import { DonationService } from './donation.service.js';
 import { CreateDonationDto } from './dto/create-donation.dto.js';
 import { UpdateDonationDto } from './dto/update-donation.dto.js';
@@ -13,8 +14,9 @@ export class DonationController {
 
   @Post()
   @UseGuards(AuthGuard)
-  create(@Body() createDonationDto: CreateDonationDto) {
-    return this.donationService.create(createDonationDto);
+  create(@Body() createDonationDto: CreateDonationDto, @Req() request: Request) {
+    const user = (request as Request & { user: { id: string; role: UserRole } }).user;
+    return this.donationService.create(createDonationDto, user.id, user.role);
   }
 
   @UseGuards(AuthGuard, RolesGuard)
@@ -25,17 +27,19 @@ export class DonationController {
   }
 
   @UseGuards(AuthGuard, RolesGuard)
-  @Roles(UserRole.USER || UserRole.ADMIN)
+  @Roles(UserRole.USER, UserRole.ADMIN)
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.donationService.findOne(id);
+  findOne(@Param('id') id: string, @Req() request: Request) {
+    const user = (request as Request & { user: { id: string; role: UserRole } }).user;
+    return this.donationService.findOne(id, user.id, user.role);
   }
 
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(UserRole.USER)
   @Get('mydonation/:id')
-  myDontions(@Param('id') id: string) {
-    return this.donationService.myDonations(id);
+  myDontions(@Param('id') id: string, @Req() request: Request) {
+    const user = (request as Request & { user: { id: string } }).user;
+    return this.donationService.myDonations(user.id);
   }
 
   @UseGuards(AuthGuard, RolesGuard)

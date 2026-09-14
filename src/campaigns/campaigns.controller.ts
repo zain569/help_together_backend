@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query } from '@nestjs/common';
+import { BadRequestException, Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query } from '@nestjs/common';
 import { CampaignsService } from './campaigns.service.js';
 import { CreateCampaignDto } from './dto/create-campaign.dto.js';
 import { UpdateCampaignDto } from './dto/update-campaign.dto.js';
@@ -24,10 +24,14 @@ export class CampaignsController {
     @Query('page') page: string = '1',
     @Query('limit') limit: string = '10',
   ) {
-    return this.campaignsService.findAll(
-      Number(page),
-      Number(limit)
-    );
+    const pageNumber = Number(page);
+    const limitNumber = Number(limit);
+
+    if (!Number.isInteger(pageNumber) || pageNumber < 1 || !Number.isInteger(limitNumber) || limitNumber < 1) {
+      throw new BadRequestException('Page and limit must be positive integers');
+    }
+
+    return this.campaignsService.findAll(pageNumber, limitNumber);
   }
 
   @Get('search')
@@ -73,11 +77,15 @@ export class CampaignsController {
   }
 
   @Patch('publish/:id')
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   publish(@Param('id') id: string) {
     return this.campaignsService.publish(id);
   }
 
   @Patch('archive/:id')
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   archive(@Param('id') id: string) {
     return this.campaignsService.archive(id);
   }

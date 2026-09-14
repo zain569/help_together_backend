@@ -1,4 +1,4 @@
-import { Body, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { RegisterDto } from './dto/register.dto.js';
 import { ConfigService } from '@nestjs/config';
@@ -39,7 +39,7 @@ export class RegisterUserService {
 
         return {
             token: token,
-            user: result
+            user: (({ password: _password, ...user }) => user)(result.user)
         }
     }
 }

@@ -10,6 +10,7 @@ import { UserModule } from './user/user.module.js';
 import { DonationModule } from './donation/donation.module.js';
 import { AdminModule } from './admin/admin.module.js';
 import { CausesModule } from './causes/causes.module.js';
+import { ServiceGiftsModule } from './service-gifts/service-gifts.module.js';
 
 @Module({
   imports: [
@@ -48,7 +49,8 @@ import { CausesModule } from './causes/causes.module.js';
     AuthModule,
     DonationModule,
     AdminModule,
-    CausesModule
+    CausesModule,
+    ServiceGiftsModule
   ],
   controllers: [AppController],
   providers: [AppService],

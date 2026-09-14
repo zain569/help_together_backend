@@ -48,7 +48,7 @@ export class AdminService {
       .createQueryBuilder('donation')
       .select('COUNT(DISTINCT donation.userId)', 'count')
       .where('donation.paymentStatus = :status', {
-        status: 'completed',
+        status: 'complete',
       })
       .getRawOne();
 
@@ -68,11 +68,18 @@ export class AdminService {
       take: 5,
     });
 
+    const donationsWithoutPasswords = latestDonations.map((donation) => ({
+      ...donation,
+      user: donation.user
+        ? (({ password: _password, ...user }) => user)(donation.user)
+        : donation.user,
+    }));
+
     //latest 5 campaigns
 
     const latestCampaign = await this.campaignRep.find({
       order: {
-        id: "DESC",
+        createdAt: "DESC",
       },
       take: 5,
     });
@@ -83,7 +90,7 @@ export class AdminService {
       collectedAmnount,
       totalUser,
       usersWhoDonated: Number(usersWhoDonated.count) || 0,
-      latestDonations,
+      latestDonations: donationsWithoutPasswords,
       latestCampaign,
     };
   }

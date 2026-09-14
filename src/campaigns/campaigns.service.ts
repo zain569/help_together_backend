@@ -12,8 +12,10 @@ export class CampaignsService {
     private readonly compainRep: Repository<CampaignEntity>
   ) { }
   async create(createCampaignDto: CreateCampaignDto) {
+    const { causeId, ...campaignData } = createCampaignDto;
     const campaign = this.compainRep.create({
-      ...createCampaignDto,
+      ...campaignData,
+      cause: { id: causeId },
       collectedAmount: 0,
       remainingAmount: createCampaignDto.goalAmount,
     });

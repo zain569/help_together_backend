@@ -2,7 +2,7 @@ import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import type { Relation } from "typeorm";
 import { CampaignEntity } from "../../campaigns/entities/campaign.entity.js";
 
-@Entity('caise')
+@Entity('causes')
 export class CauseEntity {
     @PrimaryGeneratedColumn('uuid')
     id: string;

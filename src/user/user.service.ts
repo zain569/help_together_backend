@@ -55,7 +55,7 @@ export class ProfileService {
             return null;
         }
 
-        const { password, ...userWithoutPassword } = user;
+        const { password: _password, ...userWithoutPassword } = user;
 
         return userWithoutPassword;
     }

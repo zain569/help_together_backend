@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, UseGuards } from '@nestjs/common';
 import { AdminService } from './admin.service.js';
 import { AuthGuard } from '../auth/guards/auth.guard.js';
 import { RolesGuard } from '../campaigns/guards/roles.guard.js';
