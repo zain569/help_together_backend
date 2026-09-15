@@ -11,6 +11,7 @@ import { DonationModule } from './donation/donation.module.js';
 import { AdminModule } from './admin/admin.module.js';
 import { CausesModule } from './causes/causes.module.js';
 import { ServiceGiftsModule } from './service-gifts/service-gifts.module.js';
+import { ContactModule } from './contact/contact.module.js';
 
 @Module({
   imports: [
@@ -50,7 +51,8 @@ import { ServiceGiftsModule } from './service-gifts/service-gifts.module.js';
     DonationModule,
     AdminModule,
     CausesModule,
-    ServiceGiftsModule
+    ServiceGiftsModule,
+    ContactModule
   ],
   controllers: [AppController],
   providers: [AppService],
