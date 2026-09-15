@@ -13,6 +13,7 @@ import { CausesModule } from './causes/causes.module.js';
 import { ServiceGiftsModule } from './service-gifts/service-gifts.module.js';
 import { ContactModule } from './contact/contact.module.js';
 import { FaqModule } from './faq/faq.module.js';
+import { TestimonialModule } from './testimonial/testimonial.module.js';
 
 @Module({
   imports: [
@@ -54,7 +55,8 @@ import { FaqModule } from './faq/faq.module.js';
     CausesModule,
     ServiceGiftsModule,
     ContactModule,
-    FaqModule
+    FaqModule,
+    TestimonialModule
   ],
   controllers: [AppController],
   providers: [AppService],
