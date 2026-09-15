@@ -12,6 +12,7 @@ import { AdminModule } from './admin/admin.module.js';
 import { CausesModule } from './causes/causes.module.js';
 import { ServiceGiftsModule } from './service-gifts/service-gifts.module.js';
 import { ContactModule } from './contact/contact.module.js';
+import { FaqModule } from './faq/faq.module.js';
 
 @Module({
   imports: [
@@ -52,7 +53,8 @@ import { ContactModule } from './contact/contact.module.js';
     AdminModule,
     CausesModule,
     ServiceGiftsModule,
-    ContactModule
+    ContactModule,
+    FaqModule
   ],
   controllers: [AppController],
   providers: [AppService],
