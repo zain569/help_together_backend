@@ -14,6 +14,7 @@ import { ServiceGiftsModule } from './service-gifts/service-gifts.module.js';
 import { ContactModule } from './contact/contact.module.js';
 import { FaqModule } from './faq/faq.module.js';
 import { TestimonialModule } from './testimonial/testimonial.module.js';
+import { CloudinaryModule } from './cloudinary/cloudinary.module.js';
 
 @Module({
   imports: [
@@ -56,7 +57,8 @@ import { TestimonialModule } from './testimonial/testimonial.module.js';
     ServiceGiftsModule,
     ContactModule,
     FaqModule,
-    TestimonialModule
+    TestimonialModule,
+    CloudinaryModule
   ],
   controllers: [AppController],
   providers: [AppService],
