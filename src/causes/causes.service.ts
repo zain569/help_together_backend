@@ -4,17 +4,26 @@ import { UpdateCauseDto } from './dto/update-cause.dto.js';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CauseEntity } from './entities/cause.entity.js';
 import { Repository } from 'typeorm';
+import { CloudinaryService } from '../cloudinary/cloudinary.service.js';
 
 @Injectable()
 export class CausesService {
   constructor(
     @InjectRepository(CauseEntity)
     private readonly causeRep: Repository<CauseEntity>,
+    private readonly cloudinaryService: CloudinaryService,
   ) { }
 
   //Create Cause
-  async create(createCauseDto: CreateCauseDto) {
-    const cause = this.causeRep.create(createCauseDto);
+  async create(createCauseDto: CreateCauseDto, image: Express.Multer.File) {
+    let imageUrl = createCauseDto.imageUrl;
+
+    if (image) {
+      const result: any = await this.cloudinaryService.uploadImage(image);
+      imageUrl = result.secure_url;
+    }
+
+    const cause = this.causeRep.create({ ...createCauseDto, imageUrl });
 
     return await this.causeRep.save(cause);
   }

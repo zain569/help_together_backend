@@ -1,4 +1,5 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { ServiceGiftsService } from './service-gifts.service.js';
 import { CreateServiceGiftDto } from './dto/create-service-gift.dto.js';
 import { UpdateServiceGiftDto } from './dto/update-service-gift.dto.js';
@@ -14,8 +15,12 @@ export class ServiceGiftsController {
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @Post()
-  create(@Body() createServiceGiftDto: CreateServiceGiftDto) {
-    return this.serviceGiftsService.create(createServiceGiftDto);
+  @UseInterceptors(FileInterceptor('image'))
+  create(
+    @Body() createServiceGiftDto: CreateServiceGiftDto,
+    @UploadedFile() image: Express.Multer.File,
+  ) {
+    return this.serviceGiftsService.create(createServiceGiftDto, image);
   }
 
   @UseGuards(AuthGuard, RolesGuard)

@@ -1,4 +1,4 @@
-import { BadRequestException, Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query } from '@nestjs/common';
+import { BadRequestException, Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { CampaignsService } from './campaigns.service.js';
 import { CreateCampaignDto } from './dto/create-campaign.dto.js';
 import { UpdateCampaignDto } from './dto/update-campaign.dto.js';
@@ -7,6 +7,7 @@ import { RolesGuard } from './guards/roles.guard.js';
 import { Roles } from './guards/roles.decorator.js';
 import { UserRole } from '../user/user.entity.js';
 import { CampaignStatus } from './entities/campaign.entity.js';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('campaigns')
 export class CampaignsController {
@@ -15,8 +16,12 @@ export class CampaignsController {
   @Post()
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
-  create(@Body() createCampaignDto: CreateCampaignDto) {
-    return this.campaignsService.create(createCampaignDto);
+  @UseInterceptors(FileInterceptor('image'))
+  create(
+    @Body() createCampaignDto: CreateCampaignDto,
+    @UploadedFile() image: Express.Multer.File
+  ) {
+    return this.campaignsService.create(createCampaignDto, image);
   }
 
   @Get()

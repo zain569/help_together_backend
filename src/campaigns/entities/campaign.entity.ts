@@ -41,7 +41,7 @@ export class CampaignEntity {
     cause: Relation<CauseEntity>;
 
     @Column({ nullable: true })
-    image: string;
+    imageUrl: string;
 
     @Column({ default: false })
     zakatEligible: boolean;

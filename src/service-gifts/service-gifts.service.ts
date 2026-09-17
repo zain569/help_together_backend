@@ -4,15 +4,24 @@ import { UpdateServiceGiftDto } from './dto/update-service-gift.dto.js';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ServiceGift } from './entities/service-gift.entity.js';
 import { Repository } from 'typeorm';
+import { CloudinaryService } from '../cloudinary/cloudinary.service.js';
 
 @Injectable()
 export class ServiceGiftsService {
   constructor(
     @InjectRepository(ServiceGift)
-    private readonly SerGifRep: Repository<ServiceGift>
+    private readonly SerGifRep: Repository<ServiceGift>,
+    private readonly cloudinaryService: CloudinaryService,
   ) { }
-  async create(createServiceGiftDto: CreateServiceGiftDto) {
-    const gift = this.SerGifRep.create(createServiceGiftDto)
+  async create(createServiceGiftDto: CreateServiceGiftDto, image: Express.Multer.File) {
+    let imageUrl = createServiceGiftDto.imageUrl;
+
+    if (image) {
+      const result: any = await this.cloudinaryService.uploadImage(image);
+      imageUrl = result.secure_url;
+    }
+
+    const gift = this.SerGifRep.create({ ...createServiceGiftDto, imageUrl })
     const savedGift = await this.SerGifRep.save(gift)
     return savedGift;
   }

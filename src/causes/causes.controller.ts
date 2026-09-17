@@ -1,4 +1,5 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { CausesService } from './causes.service.js';
 import { CreateCauseDto } from './dto/create-cause.dto.js';
 import { UpdateCauseDto } from './dto/update-cause.dto.js';
@@ -14,8 +15,12 @@ export class CausesController {
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @Post()
-  create(@Body() createCauseDto: CreateCauseDto) {
-    return this.causesService.create(createCauseDto);
+  @UseInterceptors(FileInterceptor('image'))
+  create(
+    @Body() createCauseDto: CreateCauseDto,
+    @UploadedFile() image: Express.Multer.File,
+  ) {
+    return this.causesService.create(createCauseDto, image);
   }
 
   @Get()

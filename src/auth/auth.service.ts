@@ -5,11 +5,17 @@ import { ConfigService } from '@nestjs/config';
 import { LoginService, ProfileService, RegisterService } from '../user/user.service.js';
 import bcrypt from 'bcrypt'
 import { LoginDto } from './dto/login.dto.js';
+import { CloudinaryService } from '../cloudinary/cloudinary.service.js';
 
 @Injectable()
 export class RegisterUserService {
-    constructor(private readonly jwtService: JwtService, private readonly configService: ConfigService, private readonly registerService: RegisterService) { }
-    async RegisterUser(registerdto: RegisterDto) {
+    constructor(
+        private readonly jwtService: JwtService,
+        private readonly configService: ConfigService,
+        private readonly registerService: RegisterService,
+        private readonly cloudinaryService: CloudinaryService,
+    ) { }
+    async RegisterUser(registerdto: RegisterDto, image: Express.Multer.File) {
         const secret = this.configService.get<string>('JWT_SECRET');
 
         //Check Email Exist
@@ -22,12 +28,24 @@ export class RegisterUserService {
             }
         }
 
+        let profileimage = null
+
+        if (image) {
+            const result: any = await this.cloudinaryService.uploadImage(image);
+
+            profileimage = result.secure_url
+        }
+
         //bcrypt password
         const saltround = 10;
         const hash = await bcrypt.hash(registerdto.password, saltround);
 
         //create User
-        const result = await this.registerService.createUser({ ...registerdto, password: hash });
+        const result = await this.registerService.createUser({
+            ...registerdto,
+            password: hash,
+            profileimage,
+        });
 
         //generate JWT token
         const payload = {

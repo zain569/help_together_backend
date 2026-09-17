@@ -1,4 +1,5 @@
 import { IsBoolean, IsNumber, IsOptional, IsString } from "class-validator";
+import { Transform, Type } from "class-transformer";
 
 export class CreateCauseDto {
     @IsString()
@@ -15,9 +16,11 @@ export class CreateCauseDto {
     imageUrl?: string;
 
     @IsNumber()
+    @Type(() => Number)
     displayOrder: number;
 
     @IsOptional()
     @IsBoolean()
+    @Transform(({ value }) => value === true || value === 'true')
     isActive: boolean;
 }

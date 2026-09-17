@@ -1,4 +1,5 @@
-import { Body, Controller, Get, Post, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Request, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { RegisterDto } from './dto/register.dto.js';
 import { LoginAuthService, ProfileAuthService, RegisterUserService } from './auth.service.js';
 import { LoginDto } from './dto/login.dto.js';
@@ -11,8 +12,12 @@ export class AuthController {
         private readonly ProfileUser: ProfileAuthService,
     ) { }
     @Post('register')
-    register(@Body() registerdto: RegisterDto) {
-        return this.registerUser.RegisterUser(registerdto)
+    @UseInterceptors(FileInterceptor('image'))
+    register(
+        @Body() registerdto: RegisterDto,
+        @UploadedFile() image: Express.Multer.File
+    ) {
+        return this.registerUser.RegisterUser(registerdto, image);
     }
 
     @Post('login')

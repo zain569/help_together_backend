@@ -4,17 +4,26 @@ import { UpdateCampaignDto } from './dto/update-campaign.dto.js';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ILike, Repository } from 'typeorm';
 import { CampaignEntity, CampaignStatus } from './entities/campaign.entity.js';
+import { CloudinaryService } from '../cloudinary/cloudinary.service.js';
 
 @Injectable()
 export class CampaignsService {
   constructor(
     @InjectRepository(CampaignEntity)
-    private readonly compainRep: Repository<CampaignEntity>
+    private readonly compainRep: Repository<CampaignEntity>,
+    private readonly cloudinaryService: CloudinaryService,
   ) { }
-  async create(createCampaignDto: CreateCampaignDto) {
+  async create(createCampaignDto: CreateCampaignDto, image: Express.Multer.File) {
+    let imageUrl = null;
+
+    if (image) {
+      const result: any = await this.cloudinaryService.uploadImage(image);
+      imageUrl = result.secure_url
+    }
     const { causeId, ...campaignData } = createCampaignDto;
     const campaign = this.compainRep.create({
       ...campaignData,
+      imageUrl,
       cause: { id: causeId },
       collectedAmount: 0,
       remainingAmount: createCampaignDto.goalAmount,
