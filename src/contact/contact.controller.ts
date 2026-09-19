@@ -1,4 +1,5 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req } from '@nestjs/common';
+import type { Request } from 'express';
 import { ContactService } from './contact.service.js';
 import { CreateContactDto } from './dto/create-contact.dto.js';
 import { UpdateContactDto } from './dto/update-contact.dto.js';
@@ -14,8 +15,9 @@ export class ContactController {
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(UserRole.USER)
   @Post()
-  submit(@Body() createContactDto: CreateContactDto) {
-    return this.contactService.submit(createContactDto);
+  submit(@Body() createContactDto: CreateContactDto, @Req() request: Request) {
+    const user = (request as Request & { user: { id: string } }).user;
+    return this.contactService.submit(createContactDto, user.id);
   }
 
   @UseGuards(AuthGuard, RolesGuard)
@@ -49,7 +51,8 @@ export class ContactController {
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(UserRole.USER)
   @Get('mycontacts/:userId')
-  mycontacts(@Param('userId') userId: string) {
-    return this.contactService.mycontacts(userId);
+  mycontacts(@Req() request: Request) {
+    const user = (request as Request & { user: { id: string } }).user;
+    return this.contactService.mycontacts(user.id);
   }
 }

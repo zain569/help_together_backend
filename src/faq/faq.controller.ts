@@ -33,7 +33,7 @@ export class FaqController {
   }
 
   @UseGuards(AuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN || UserRole.USER)
+  @Roles(UserRole.ADMIN, UserRole.USER)
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.faqService.findOne(id);

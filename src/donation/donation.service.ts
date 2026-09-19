@@ -2,12 +2,13 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { CreateDonationDto } from './dto/create-donation.dto.js';
 import { UpdateDonationDto } from './dto/update-donation.dto.js';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DonationEntity } from './entities/donation.entity.js';
+import { DonationEntity, PaymentMethod, PaymentStatus } from './entities/donation.entity.js';
 import { Repository } from 'typeorm';
 import { User } from '../user/user.entity.js';
 import { CampaignEntity } from '../campaigns/entities/campaign.entity.js';
 import { ServiceGift } from '../service-gifts/entities/service-gift.entity.js';
 import { UserRole } from '../user/user.entity.js';
+import { StripeService } from '../stripe/stripe.service.js';
 
 @Injectable()
 export class DonationService {
@@ -22,7 +23,9 @@ export class DonationService {
     private readonly campaignRep: Repository<CampaignEntity>,
 
     @InjectRepository(ServiceGift)
-    private readonly SerGifRep: Repository<ServiceGift>
+    private readonly SerGifRep: Repository<ServiceGift>,
+
+    private readonly stripeService: StripeService
   ) { }
   async create(createDonationDto: CreateDonationDto, authenticatedUserId: string, authenticatedUserRole: UserRole) {
     const {
@@ -30,8 +33,6 @@ export class DonationService {
       campaignId,
       serviceGiftId,
       amount,
-      paymentStatus,
-      paymentMethod,
     } = createDonationDto;
 
     // Find user
@@ -74,7 +75,6 @@ export class DonationService {
         throw new NotFoundException('Service Gift Not Found');
       }
     }
-
     // Donation must have at least campaign OR service
     if (!campaignId && !serviceGiftId) {
       throw new BadRequestException(
@@ -82,32 +82,42 @@ export class DonationService {
       );
     }
 
-    // Create donation
-    const donation = await this.donationRep.create({
+    //Create Pending Donation
+
+    const donation = this.donationRep.create({
       amount,
-      paymentStatus,
-      paymentMethod,
+      currency: 'PKR',
+      paymentStatus: PaymentStatus.PENDING,
+      paymentMethod: PaymentMethod.STRIPE,
       user,
       campaign: campaign ?? undefined,
-      ServiceGift: serviceGift ?? undefined,
-    });
+      serviceGift: serviceGift ?? undefined
+    })
 
     const savedDonation = await this.donationRep.save(donation);
 
-    // Only update campaign if this donation has a campaign
-    if (campaign) {
-      campaign.collectedAmount =
-        Number(campaign.collectedAmount) + Number(amount);
+    //Create Stripe Payment
 
-      campaign.remainingAmount = Math.max(
-        Number(campaign.goalAmount) - Number(campaign.collectedAmount),
-        0,
-      );
+    const session = await this.stripeService.createCheckoutSession(
+      Number(amount),
+      savedDonation.id
+    );
 
-      await this.campaignRep.save(campaign);
+    //Add stripe session ID
+
+    savedDonation.stripeSessionId = session.sessionId;
+
+    await this.donationRep.save(savedDonation);
+
+    return {
+      message: 'Donation created. Complete payment through Stripe.',
+      donationId: savedDonation.id,
+      amount: savedDonation.amount,
+      currency: savedDonation.currency,
+      paymentStatus: savedDonation.paymentStatus,
+      paymentMethod: savedDonation.paymentMethod,
+      checkoutUrl: session.checkoutUrl,
     }
-
-    return savedDonation;
   }
 
   findAll() {
@@ -124,10 +134,91 @@ export class DonationService {
         },
       },
       relations: {
-        campaign: true
+        campaign: true,
+        serviceGift: true
       }
     });
     return user;
+  }
+
+  //--------------------
+  // Stripe Pyment Succeeded
+  //--------------------
+
+  async markAsSucceeded(
+    donationId: string,
+    paymentIntentId: string,
+  ) {
+    const donation = await this.donationRep.findOne({
+      where: {
+        id: donationId
+      },
+
+      relations: {
+        campaign: true,
+        serviceGift: true,
+      },
+    });
+
+    if (!donation) {
+      throw new NotFoundException('Donation Not Found',);
+    };
+
+    //PREVENT DUPLICATE WEBHOOK
+
+    if (donation.paymentStatus === PaymentStatus.SUCCEEDED) {
+      return donation;
+    };
+
+    //UPDATE PAYMENT STATUS
+
+    donation.paymentStatus = PaymentStatus.SUCCEEDED;
+
+    donation.stripePaymentIntentId = paymentIntentId;
+
+    await this.donationRep.save(donation);
+
+    if (donation.campaign) {
+      const campaign = await this.campaignRep.findOne({
+        where: {
+          id: donation.campaign.id,
+        },
+      });
+
+      if (campaign) {
+        const donationAmount = Number(donation.amount);
+
+        campaign.collectedAmount = Number(campaign.collectedAmount) + donationAmount;
+
+        campaign.remainingAmount = Number(campaign.goalAmount) - Number(campaign.collectedAmount);
+
+        if (campaign.remainingAmount < 0) {
+          campaign.remainingAmount = 0;
+        };
+
+        await this.campaignRep.save(campaign);
+      }
+    }
+  };
+
+  async markAsFailed(donatiionId: string) {
+    const donation = await this.donationRep.findOne({
+      where: {
+        id: donatiionId,
+      },
+    });
+
+    if (!donation) {
+      throw new NotFoundException('Donation Not Found');
+    };
+
+    if (donation.paymentStatus === PaymentStatus.SUCCEEDED) {
+      return donation;
+    };
+
+    donation.paymentStatus = PaymentStatus.FAILED;
+
+    return await this.donationRep.save(donation);
   }
 
   async findOne(id: string, authenticatedUserId: string, authenticatedUserRole: UserRole) {
@@ -138,6 +229,7 @@ export class DonationService {
       relations: {
         user: true,
         campaign: true,
+        serviceGift: true
       }
     });
 
@@ -146,22 +238,6 @@ export class DonationService {
     }
 
     return donation
-  }
-
-  async update(id: string, updateDonationDto: UpdateDonationDto) {
-
-    const donation = await this.donationRep.findOne({
-      where: {
-        id: String(id)
-      }
-    });
-
-    if (!donation) {
-      throw new NotFoundException(`Donation with this ${id} not found`)
-    };
-
-    donation.paymentStatus = updateDonationDto.paymentStatus;
-    return await this.donationRep.save(donation);
   }
 
   async remove(id: string) {

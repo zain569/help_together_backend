@@ -33,21 +33,21 @@ export class TestimonialController {
   }
 
   @UseGuards(AuthGuard, RolesGuard)
-  @Roles(UserRole.USER || UserRole.ADMIN)
+  @Roles(UserRole.USER)
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.testimonialService.findOne(id);
   }
 
   @UseGuards(AuthGuard, RolesGuard)
-  @Roles(UserRole.USER || UserRole.ADMIN)
+  @Roles(UserRole.ADMIN)
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateTestimonialDto: UpdateTestimonialDto) {
     return this.testimonialService.update(id, updateTestimonialDto);
   }
 
   @UseGuards(AuthGuard, RolesGuard)
-  @Roles(UserRole.USER || UserRole.ADMIN)
+  @Roles(UserRole.ADMIN)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.testimonialService.remove(id);

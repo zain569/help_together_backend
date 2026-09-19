@@ -51,6 +51,11 @@ export class CampaignsService {
 
   async findOne(id: string) {
     const campaign = await this.compainRep.findOne({ where: { id: id } });
+
+    if (!campaign) {
+      throw new NotFoundException(`Campaign with ID ${id} is not found`);
+    }
+
     return { campaign };
   }
 

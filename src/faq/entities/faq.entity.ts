@@ -11,7 +11,7 @@ export class Faq {
     @Column({ type: 'text' })
     answer: string;
 
-    @PrimaryGeneratedColumn()
+    @Column({ type: 'int', default: 0 })
     displayOver: number;
 
     @Column({ default: true })

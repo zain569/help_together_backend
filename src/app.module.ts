@@ -15,6 +15,7 @@ import { ContactModule } from './contact/contact.module.js';
 import { FaqModule } from './faq/faq.module.js';
 import { TestimonialModule } from './testimonial/testimonial.module.js';
 import { CloudinaryModule } from './cloudinary/cloudinary.module.js';
+import { StripeModule } from './stripe/stripe.module.js';
 
 @Module({
   imports: [
@@ -58,7 +59,8 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module.js';
     ContactModule,
     FaqModule,
     TestimonialModule,
-    CloudinaryModule
+    CloudinaryModule,
+    StripeModule
   ],
   controllers: [AppController],
   providers: [AppService],

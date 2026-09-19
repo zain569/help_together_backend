@@ -20,17 +20,20 @@ export class ContactService {
   ) { }
 
 
-  async submit(createContactDto: CreateContactDto) {
+  async submit(createContactDto: CreateContactDto, authenticatedUserId: string) {
     const user = await this.userRep.findOne({
       where: {
-        id: createContactDto.userId
+        id: authenticatedUserId
       }
     });
 
     if (!user) {
-      throw new NotFoundException(`There is no User in this ID"${createContactDto.userId}"`)
+      throw new NotFoundException(`There is no User in this ID"${authenticatedUserId}"`)
     }
-    const contact = await this.contRep.create(createContactDto);
+    const contact = this.contRep.create({
+      ...createContactDto,
+      userId: authenticatedUserId,
+    });
 
     const savedContact = await this.contRep.save(contact);
     return savedContact;

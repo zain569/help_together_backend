@@ -23,7 +23,7 @@ export class RegisterDto {
     @IsString()
     profileimage: string;
 
-    @IsIn(['user', 'admin', 'organization'])
+    @IsIn(['user'])
     role: UserRole;
 
     @IsOptional()

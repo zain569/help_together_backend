@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { AuthController } from './auth.controller.js';
 import { LoginAuthService, ProfileAuthService, RegisterUserService } from './auth.service.js';
 import { JwtModule } from '@nestjs/jwt';
@@ -12,7 +12,7 @@ import { CloudinaryModule } from '../cloudinary/cloudinary.module.js';
   exports:[AuthGuard, JwtModule],
   imports:[
     UserModule,
-    CloudinaryModule,
+    forwardRef(() => CloudinaryModule),
     JwtModule.registerAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({

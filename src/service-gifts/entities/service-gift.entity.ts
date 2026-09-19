@@ -16,7 +16,7 @@ export class ServiceGift {
     @Column()
     price: number;
 
-    @OneToMany(()=> DonationEntity, (donations) => donations.ServiceGift)
+    @OneToMany(()=> DonationEntity, (donations) => donations.serviceGift)
     donations: Relation<DonationEntity>
 
     @Column({nullable: true})

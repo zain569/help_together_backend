@@ -4,6 +4,17 @@ import { User } from "../../user/user.entity.js";
 import { CampaignEntity } from "../../campaigns/entities/campaign.entity.js";
 import { ServiceGift } from "../../service-gifts/entities/service-gift.entity.js";
 
+
+export enum PaymentStatus {
+    PENDING = 'PENDING',
+    SUCCEEDED = 'SUCCEEDED',
+    FAILED = 'FAILED',
+}
+
+export enum PaymentMethod {
+    STRIPE = 'STRIPE',
+    MANUAL = 'MANUAL',
+}
 @Entity('donation')
 export class DonationEntity {
     @PrimaryGeneratedColumn('uuid')
@@ -19,13 +30,34 @@ export class DonationEntity {
     campaign: Relation<CampaignEntity>;
 
     @ManyToOne(() => ServiceGift, (serviceGifts) => serviceGifts.donations, { nullable: true })
-    ServiceGift: Relation<ServiceGift>
+    serviceGift: Relation<ServiceGift>
 
-    @Column()
-    paymentStatus: string;
+    @Column({
+        type: 'enum',
+        enum: PaymentStatus,
+        default: PaymentStatus.PENDING,
+    })
+    paymentStatus: PaymentStatus;
 
-    @Column()
-    paymentMethod: string;
+    @Column({
+        type: 'enum',
+        enum: PaymentMethod,
+        default: PaymentMethod.STRIPE,
+    })
+    paymentMethod: PaymentMethod;
+
+    @Column({
+        type: 'varchar',
+        length: 3,
+        default: 'PKR',
+    })
+    currency: string;
+
+    @Column({ nullable: true })
+    stripeSessionId: string;
+
+    @Column({nullable: true})
+    stripePaymentIntentId : string
 
     @CreateDateColumn()
     createdAt: Date;

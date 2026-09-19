@@ -36,6 +36,11 @@ export class FaqService {
         id: id
       }
     });
+
+    if (!faq) {
+      throw new NotFoundException(`There is no FAQ'S on This ID: "${id}"`);
+    }
+
     return faq;
   }
 

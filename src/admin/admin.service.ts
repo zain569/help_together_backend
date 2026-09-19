@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { DonationEntity } from '../donation/entities/donation.entity.js';
+import { DonationEntity, PaymentStatus } from '../donation/entities/donation.entity.js';
 import { User } from '../user/user.entity.js';
 import { CampaignEntity } from '../campaigns/entities/campaign.entity.js';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -22,7 +22,7 @@ export class AdminService {
 
     const totalDonations = await this.donationRep.count({
       where: {
-        paymentStatus: "complete"
+        paymentStatus: PaymentStatus.SUCCEEDED,
       }
     });
 
@@ -32,7 +32,7 @@ export class AdminService {
       .createQueryBuilder('donation')
       .select('SUM(donation.amount)', 'total')
       .where('donation.paymentStatus = :status', {
-        status: 'complete',
+        status: PaymentStatus.SUCCEEDED,
       })
       .getRawOne();
 
@@ -48,7 +48,7 @@ export class AdminService {
       .createQueryBuilder('donation')
       .select('COUNT(DISTINCT donation.userId)', 'count')
       .where('donation.paymentStatus = :status', {
-        status: 'complete',
+        status: PaymentStatus.SUCCEEDED,
       })
       .getRawOne();
 
@@ -56,7 +56,7 @@ export class AdminService {
 
     const latestDonations = await this.donationRep.find({
       where: {
-        paymentStatus: "complete"
+        paymentStatus: PaymentStatus.SUCCEEDED
       },
       relations: {
         campaign: true,
