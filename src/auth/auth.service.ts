@@ -28,7 +28,7 @@ export class RegisterUserService {
             }
         }
 
-        let profileimage = null
+        let profileimage = 'https://res.cloudinary.com/dkgeren05/image/upload/v1789876344/default-donation-website-pic_rymjog.png'
 
         if (image) {
             const result: any = await this.cloudinaryService.uploadImage(image);

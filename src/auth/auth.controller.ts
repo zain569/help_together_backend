@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Request, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, Post, Request, Response, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { RegisterDto } from './dto/register.dto.js';
 import { LoginAuthService, ProfileAuthService, RegisterUserService } from './auth.service.js';
@@ -13,16 +13,40 @@ export class AuthController {
     ) { }
     @Post('register')
     @UseInterceptors(FileInterceptor('image'))
-    register(
+    async register(
         @Body() registerdto: RegisterDto,
-        @UploadedFile() image: Express.Multer.File
+        @UploadedFile() image: Express.Multer.File,
+        @Response({ passthrough: true }) res: any
     ) {
-        return this.registerUser.RegisterUser(registerdto, image);
+        const result = await this.registerUser.RegisterUser(registerdto, image);
+
+        if (result.token) {
+            res.cookie('token', result.token, {
+                httpOnly: true,
+                secure: false,
+                sameSite: 'lax',
+                maxAge: 7 * 24 * 60 * 60 * 1000,
+            })
+        }
     }
 
     @Post('login')
-    login(@Body() loginDto: LoginDto) {
-        return this.loginUser.LoginUser(loginDto);
+    async login(
+        @Body() loginDto: LoginDto,
+        @Response({ passthrough: true }) res: any,
+    ) {
+        const result = await this.loginUser.LoginUser(loginDto);
+
+        if (result.token) {
+            res.cookie('token', result.token, {
+                httpOnly: true,
+                secure: false,
+                sameSite: 'lax',
+                maxAge: 7 * 24 * 60 * 60 * 1000,
+            });
+        }
+
+        return result;
     }
 
     @UseGuards(AuthGuard)
@@ -34,6 +58,7 @@ export class AuthController {
 
         return {
             ...user,
+            isUser: true
         }
     }
 }
