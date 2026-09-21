@@ -87,11 +87,15 @@ export class AdminService {
   }
 
   async ourUsers() {
-    const totalDonations = await this.donationRep.count({
-      where: {
-        paymentStatus: PaymentStatus.SUCCEEDED,
-      },
-    });
+    const totalDonationsResult = await this.donationRep
+      .createQueryBuilder('donation')
+      .select('SUM(donation.amount)', 'total')
+      .where('donation.paymentStatus = :status', {
+        status: PaymentStatus.SUCCEEDED,
+      })
+      .getRawOne();
+
+    const totalDonations = Number(totalDonationsResult.total) || 0;
 
     const totalActiveCampaigns = await this.campaignRep.count({
       where: {
