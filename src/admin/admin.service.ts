@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { DonationEntity, PaymentStatus } from '../donation/entities/donation.entity.js';
 import { User } from '../user/user.entity.js';
-import { CampaignEntity } from '../campaigns/entities/campaign.entity.js';
+import { CampaignEntity, CampaignStatus } from '../campaigns/entities/campaign.entity.js';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -18,14 +18,6 @@ export class AdminService {
     private readonly campaignRep: Repository<CampaignEntity>,
   ) { }
   async adminDashboard() {
-    //Total Donation Count
-
-    const totalDonations = await this.donationRep.count({
-      where: {
-        paymentStatus: PaymentStatus.SUCCEEDED,
-      }
-    });
-
     //total collected amount
 
     const result = await this.donationRep
@@ -86,12 +78,49 @@ export class AdminService {
 
 
     return {
-      totalDonations,
       collectedAmnount,
       totalUser,
       usersWhoDonated: Number(usersWhoDonated.count) || 0,
       latestDonations: donationsWithoutPasswords,
       latestCampaign,
+    };
+  }
+
+  async ourUsers() {
+    const totalDonations = await this.donationRep.count({
+      where: {
+        paymentStatus: PaymentStatus.SUCCEEDED,
+      },
+    });
+
+    const totalActiveCampaigns = await this.campaignRep.count({
+      where: {
+        status: CampaignStatus.PUBLISHED,
+      },
+    });
+
+    const peoplesHelped = await this.donationRep
+      .createQueryBuilder('donation')
+      .innerJoin('donation.campaign', 'campaign')
+      .where('donation.paymentStatus = :status', {
+        status: PaymentStatus.SUCCEEDED,
+      })
+      .getCount();
+
+    const result = await this.donationRep
+      .createQueryBuilder('donation')
+      .select('COUNT(DISTINCT donation.userId)', 'count')
+      .where('donation.paymentStatus = :status', {
+        status: PaymentStatus.SUCCEEDED,
+      })
+      .andWhere('donation.userId IS NOT NULL')
+      .getRawOne();
+
+    return {
+      totalDonations,
+      totalActiveCampaigns,
+      peoplesHelped,
+      ourUsers: Number(result.count) || 0,
     };
   }
 }

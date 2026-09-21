@@ -14,4 +14,9 @@ export class AdminController {
   dashboard() {
     return this.adminService.adminDashboard();
   }
+
+  @Get('ourusers')
+  ourUsers() {
+    return this.adminService.ourUsers();
+  }
 }
