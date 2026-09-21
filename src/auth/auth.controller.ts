@@ -23,9 +23,10 @@ export class AuthController {
         if (result.token) {
             res.cookie('token', result.token, {
                 httpOnly: true,
-                secure: false,
-                sameSite: 'lax',
+                secure: true,
+                sameSite: 'none',
                 maxAge: 7 * 24 * 60 * 60 * 1000,
+                path: "/"
             })
         }
 
@@ -42,8 +43,8 @@ export class AuthController {
         if (result.token) {
             res.cookie('token', result.token, {
                 httpOnly: true,
-                secure: false,
-                sameSite: 'lax',
+                secure: true,
+                sameSite: 'none',
                 maxAge: 7 * 24 * 60 * 60 * 1000,
             });
         }
