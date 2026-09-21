@@ -23,8 +23,11 @@ export class AuthGuard implements CanActivate {
 
         const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
 
-        // Get token from cookie
-        const token = request.cookies?.token;
+        const authorization = request.headers.authorization;
+        const bearerToken = authorization?.startsWith('Bearer ')
+            ? authorization.slice(7)
+            : undefined;
+        const token = bearerToken ?? request.cookies?.token;
 
         if (!token) {
             throw new UnauthorizedException('Please login first');
