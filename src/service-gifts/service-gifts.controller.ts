@@ -23,8 +23,6 @@ export class ServiceGiftsController {
     return this.serviceGiftsService.create(createServiceGiftDto, image);
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.USER)
   @Get()
   findAll() {
     return this.serviceGiftsService.findAll();
