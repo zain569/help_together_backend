@@ -18,8 +18,7 @@ export class TestimonialController {
     return this.testimonialService.create(createTestimonialDto);
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(UserRole.USER)
+  
   @Get()
   findAll() {
     return this.testimonialService.findAll();
