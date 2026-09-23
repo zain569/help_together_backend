@@ -16,4 +16,7 @@ export class Testimonial {
 
     @Column({ default: true })
     isActive: boolean;
+
+    @Column()
+    imageUrl: string
 }

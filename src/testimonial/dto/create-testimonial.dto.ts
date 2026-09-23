@@ -18,4 +18,8 @@ export class CreateTestimonialDto {
     @IsOptional()
     @IsBoolean()
     isActive?: boolean;
+
+    @IsNotEmpty()
+    @IsString()
+    imageUrl: string;
 }
