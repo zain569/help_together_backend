@@ -6,10 +6,11 @@ import { CampaignEntity } from '../campaigns/entities/campaign.entity.js';
 import { User } from '../user/user.entity.js';
 import { DonationEntity } from '../donation/entities/donation.entity.js';
 import { AuthModule } from '../auth/auth.module.js';
+import { ServiceGift } from '../service-gifts/entities/service-gift.entity.js';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([CampaignEntity, User, DonationEntity]),
+    TypeOrmModule.forFeature([CampaignEntity, User, DonationEntity, ServiceGift]),
     AuthModule
   ],
   controllers: [AdminController],
