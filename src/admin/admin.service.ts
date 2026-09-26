@@ -6,6 +6,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ServiceGift } from '../service-gifts/entities/service-gift.entity.js';
 import { Faq } from '../faq/entities/faq.entity.js';
+import { CauseEntity } from '../causes/entities/cause.entity.js';
+import { ContactEntity } from '../contact/entities/contact.entity.js';
+import { Testimonial } from '../testimonial/entities/testimonial.entity.js';
 
 @Injectable()
 export class AdminService {
@@ -23,7 +26,16 @@ export class AdminService {
     private readonly serviceGiftRep: Repository<ServiceGift>,
 
     @InjectRepository(Faq)
-    private readonly faq: Repository<Faq>
+    private readonly faq: Repository<Faq>,
+
+    @InjectRepository(CauseEntity)
+    private readonly causeEntity: Repository<CauseEntity>,
+
+    @InjectRepository(ContactEntity)
+    private readonly contactEmtity: Repository<ContactEntity>,
+
+    @InjectRepository(Testimonial)
+    private readonly testimonial: Repository<Testimonial>,
   ) { }
   async adminDashboard() {
     //total collected amount
@@ -96,6 +108,27 @@ export class AdminService {
       }
     })
 
+    //send causes
+
+    const causes = await this.causeEntity.find({
+      order: {
+        id: "DESC"
+      }
+    })
+
+    const contacts = await this.contactEmtity.find({
+      order: {
+        id: "DESC"
+      }
+    })
+
+    //Send Reviews
+    const testimonials = await this.testimonial.find({
+      order: {
+        id: "DESC"
+      },
+    })
+
     return {
       collectedAmnount,
       totalUser,
@@ -104,6 +137,9 @@ export class AdminService {
       latestCampaign,
       latestServices,
       faqs,
+      causes,
+      contacts,
+      testimonials,
     };
   }
 
