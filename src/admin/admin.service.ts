@@ -76,6 +76,9 @@ export class AdminService {
       order: {
         createdAt: "DESC",
       },
+      relations: {
+        cause: true,
+      },
     });
 
     //Latest Services
