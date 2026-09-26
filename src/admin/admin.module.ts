@@ -7,10 +7,11 @@ import { User } from '../user/user.entity.js';
 import { DonationEntity } from '../donation/entities/donation.entity.js';
 import { AuthModule } from '../auth/auth.module.js';
 import { ServiceGift } from '../service-gifts/entities/service-gift.entity.js';
+import { Faq } from '../faq/entities/faq.entity.js';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([CampaignEntity, User, DonationEntity, ServiceGift]),
+    TypeOrmModule.forFeature([CampaignEntity, User, DonationEntity, ServiceGift, Faq]),
     AuthModule
   ],
   controllers: [AdminController],
