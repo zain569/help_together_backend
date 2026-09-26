@@ -4,6 +4,7 @@ import { User } from '../user/user.entity.js';
 import { CampaignEntity, CampaignStatus } from '../campaigns/entities/campaign.entity.js';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { ServiceGift } from '../service-gifts/entities/service-gift.entity.js';
 
 @Injectable()
 export class AdminService {
@@ -16,6 +17,9 @@ export class AdminService {
 
     @InjectRepository(CampaignEntity)
     private readonly campaignRep: Repository<CampaignEntity>,
+
+    @InjectRepository(ServiceGift)
+    private readonly serviceGiftRep: Repository<ServiceGift>,
   ) { }
   async adminDashboard() {
     //total collected amount
@@ -57,7 +61,6 @@ export class AdminService {
       order: {
         createdAt: "DESC"
       },
-      take: 5,
     });
 
     const donationsWithoutPasswords = latestDonations.map((donation) => ({
@@ -73,8 +76,15 @@ export class AdminService {
       order: {
         createdAt: "DESC",
       },
-      take: 5,
     });
+
+    //Latest Services
+
+    const latestServices = await this.serviceGiftRep.find({
+      order: {
+        id: "DESC",
+      },
+    })
 
 
     return {
@@ -83,6 +93,7 @@ export class AdminService {
       usersWhoDonated: Number(usersWhoDonated.count) || 0,
       latestDonations: donationsWithoutPasswords,
       latestCampaign,
+      latestServices,
     };
   }
 

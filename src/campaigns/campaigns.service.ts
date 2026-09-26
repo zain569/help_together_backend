@@ -38,7 +38,16 @@ export class CampaignsService {
   async findAll(page: number, limit: number) {
     const [campaigns, total] = await this.compainRep.findAndCount({
       skip: (page - 1) * limit,
-      take: limit
+      take: limit,
+      relations: {
+        cause: true,
+      },
+      order: {
+        createdAt: "DESC"
+      },
+      where: {
+        status: CampaignStatus.PUBLISHED
+      }
     });
     return {
       campaigns,

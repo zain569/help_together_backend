@@ -4,6 +4,7 @@ import { RegisterDto } from './dto/register.dto.js';
 import { LoginAuthService, ProfileAuthService, RegisterUserService } from './auth.service.js';
 import { LoginDto } from './dto/login.dto.js';
 import { AuthGuard } from './guards/auth.guard.js';
+import path from 'path';
 
 @Controller('auth')
 export class AuthController {
@@ -46,6 +47,7 @@ export class AuthController {
                 secure: true,
                 sameSite: 'none',
                 maxAge: 7 * 24 * 60 * 60 * 1000,
+                path: "/"
             });
         }
 
