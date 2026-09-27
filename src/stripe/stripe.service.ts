@@ -36,9 +36,9 @@ export class StripeService {
         donationId,
       },
 
-      success_url: `${process.env.FRONTEND_URL}/payment-success`,
+      success_url: `https://help-together.netlify.app/payment-success`,
 
-      cancel_url: `${process.env.FRONTEND_URL}/payment-cancel`
+      cancel_url: `https://help-together.netlify.app/payment-cancel`
     });
 
     return {
