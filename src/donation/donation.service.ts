@@ -133,6 +133,9 @@ export class DonationService {
           id: id
         },
       },
+      order: {
+        createdAt: 'DESC'
+      },
       relations: {
         campaign: true,
         serviceGift: true

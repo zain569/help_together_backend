@@ -9,10 +9,11 @@ export class AdminController {
   constructor(private readonly adminService: AdminService) { }
 
   @UseGuards(AuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.USER)
+  @Roles(UserRole.ADMIN)
   @Get('dashboard')
   dashboard() {
     return this.adminService.adminDashboard();
+
   }
 
   @Get('ourusers')
