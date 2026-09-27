@@ -1,4 +1,4 @@
-import { IsNumber, IsOptional, IsString, IsUUID, Min } from "class-validator";
+import { isBoolean, IsBoolean, IsNotEmpty, isNotEmpty, IsNumber, IsOptional, IsString, IsUUID, Min } from "class-validator";
 import { Type } from "class-transformer";
 
 export class CreateCampaignDto {
@@ -16,6 +16,14 @@ export class CreateCampaignDto {
     @IsString()
     @IsOptional()
     imageUrl: string;
+
+    @IsNotEmpty()
+    @IsBoolean()
+    zakatEligible: boolean;
+
+    @IsNotEmpty()
+    @IsBoolean()
+    urgent: boolean;
 
     @IsUUID()
     causeId: string;
