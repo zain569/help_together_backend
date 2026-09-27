@@ -95,6 +95,14 @@ export class CampaignsController {
     return this.campaignsService.archive(id);
   }
 
+  @Patch('funded/:id')
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  funded(@Param('id') id: string) {
+    return this.campaignsService.funded(id);
+  }
+
+
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @Delete(':id')

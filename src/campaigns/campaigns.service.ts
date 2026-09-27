@@ -197,4 +197,21 @@ export class CampaignsService {
 
     return await this.compainRep.save(campaign);
   }
+
+  async funded(id: string) {
+
+    const campaign = await this.compainRep.findOne({
+      where: {
+        id,
+      },
+    });
+
+    if (!campaign) {
+      throw new NotFoundException('Campaign Not Found');
+    }
+
+    campaign.status = CampaignStatus.FUNDED;
+
+    return await this.compainRep.save(campaign);
+  }
 }
