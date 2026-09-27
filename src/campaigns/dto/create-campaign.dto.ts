@@ -1,5 +1,5 @@
-import { isBoolean, IsBoolean, IsNotEmpty, isNotEmpty, IsNumber, IsOptional, IsString, IsUUID, Min } from "class-validator";
-import { Type } from "class-transformer";
+import { IsBoolean, IsNotEmpty, isNotEmpty, IsNumber, IsOptional, IsString, IsUUID, Min } from "class-validator";
+import { Transform, Type } from "class-transformer";
 
 export class CreateCampaignDto {
     @IsString()
@@ -17,11 +17,11 @@ export class CreateCampaignDto {
     @IsOptional()
     imageUrl: string;
 
-    @IsNotEmpty()
+    @Transform(({ value }) => value === true || value === 'true')
     @IsBoolean()
     zakatEligible: boolean;
 
-    @IsNotEmpty()
+    @Transform(({ value }) => value === true || value === 'true')
     @IsBoolean()
     urgent: boolean;
 
