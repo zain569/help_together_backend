@@ -37,9 +37,8 @@ export class AdminService {
     @InjectRepository(Testimonial)
     private readonly testimonial: Repository<Testimonial>,
   ) { }
-  async adminDashboard() {
-    //total collected amount
 
+  async adminDashboard() {
     const result = await this.donationRep
       .createQueryBuilder('donation')
       .select('SUM(donation.amount)', 'total')
@@ -50,11 +49,7 @@ export class AdminService {
 
     const collectedAmnount = Number(result.total) || 0;
 
-    //total users
-
     const totalUser = await this.userRep.count();
-
-    //users who donated
 
     const usersWhoDonated = await this.donationRep
       .createQueryBuilder('donation')
@@ -63,8 +58,6 @@ export class AdminService {
         status: PaymentStatus.SUCCEEDED,
       })
       .getRawOne();
-
-    //last 5 donations
 
     const latestDonations = await this.donationRep.find({
       relations: {
@@ -78,12 +71,20 @@ export class AdminService {
 
     const donationsWithoutPasswords = latestDonations.map((donation) => ({
       ...donation,
+      createdAt: new Date(donation.createdAt)
+        .toLocaleString("en-GB", {
+          day: "2-digit",
+          month: "short",
+          year: "2-digit",
+          hour: "numeric",
+          minute: "2-digit",
+          hour12: false,
+        })
+        .replace(",", ""),
       user: donation.user
         ? (({ password: _password, ...user }) => user)(donation.user)
         : donation.user,
     }));
-
-    //latest 5 campaigns
 
     const latestCampaign = await this.campaignRep.find({
       order: {
@@ -94,40 +95,35 @@ export class AdminService {
       },
     });
 
-    //Latest Services
-
     const latestServices = await this.serviceGiftRep.find({
       order: {
         id: "DESC",
       },
-    })
+    });
 
     const faqs = await this.faq.find({
       order: {
         id: "DESC"
       }
-    })
-
-    //send causes
+    });
 
     const causes = await this.causeEntity.find({
       order: {
         id: "DESC"
       }
-    })
+    });
 
     const contacts = await this.contactEmtity.find({
       order: {
         id: "DESC"
       }
-    })
+    });
 
-    //Send Reviews
     const testimonials = await this.testimonial.find({
       order: {
         id: "DESC"
       },
-    })
+    });
 
     return {
       collectedAmnount,
