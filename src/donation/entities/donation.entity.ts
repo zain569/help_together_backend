@@ -15,6 +15,12 @@ export enum PaymentMethod {
     STRIPE = 'STRIPE',
     MANUAL = 'MANUAL',
 }
+
+export enum DonationType {
+    GENERAL = 'general',
+    ZAKAT = 'zakat',
+    SADAQAH = 'sadaqah',
+}
 @Entity('donation')
 export class DonationEntity {
     @PrimaryGeneratedColumn('uuid')
@@ -53,11 +59,18 @@ export class DonationEntity {
     })
     currency: string;
 
+    @Column({
+        type: 'enum',
+        enum: DonationType,
+        default: DonationType.GENERAL,
+    })
+    donationType: DonationType;
+
     @Column({ nullable: true })
     stripeSessionId: string;
 
-    @Column({nullable: true})
-    stripePaymentIntentId : string
+    @Column({ nullable: true })
+    stripePaymentIntentId: string
 
     @CreateDateColumn()
     createdAt: Date;
