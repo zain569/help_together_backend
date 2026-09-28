@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { CreateDonationDto } from './dto/create-donation.dto.js';
 import { UpdateDonationDto } from './dto/update-donation.dto.js';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DonationEntity, PaymentMethod, PaymentStatus } from './entities/donation.entity.js';
+import { DonationEntity, DonationType, PaymentMethod, PaymentStatus } from './entities/donation.entity.js';
 import { Repository } from 'typeorm';
 import { User } from '../user/user.entity.js';
 import { CampaignEntity } from '../campaigns/entities/campaign.entity.js';
@@ -33,6 +33,7 @@ export class DonationService {
       campaignId,
       serviceGiftId,
       amount,
+      donationType,
     } = createDonationDto;
 
     // Find user
@@ -86,6 +87,7 @@ export class DonationService {
 
     const donation = this.donationRep.create({
       amount,
+      donationType: donationType as DonationType,
       currency: 'PKR',
       paymentStatus: PaymentStatus.PENDING,
       paymentMethod: PaymentMethod.STRIPE,
