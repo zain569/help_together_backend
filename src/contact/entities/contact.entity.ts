@@ -1,4 +1,4 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 
 @Entity('contacts')
 export class ContactEntity {
@@ -25,4 +25,10 @@ export class ContactEntity {
 
     @Column({ type: 'text', nullable: true })
     adminNote: string;
+
+    @CreateDateColumn()
+    createAt: Date;
+
+    @UpdateDateColumn()
+    updateAt: Date;
 }

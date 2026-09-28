@@ -28,12 +28,12 @@ export class RegisterUserService {
             }
         }
 
-        let profileimage = 'https://res.cloudinary.com/dkgeren05/image/upload/v1789876344/default-donation-website-pic_rymjog.png'
+        let profileImage = 'https://res.cloudinary.com/dkgeren05/image/upload/v1789876344/default-donation-website-pic_rymjog.png'
 
         if (image) {
             const result: any = await this.cloudinaryService.uploadImage(image);
 
-            profileimage = result.secure_url
+            profileImage = result.secure_url
         }
 
         //bcrypt password
@@ -44,7 +44,7 @@ export class RegisterUserService {
         const result = await this.registerService.createUser({
             ...registerdto,
             password: hash,
-            profileimage,
+            profileImage,
         });
 
         //generate JWT token
@@ -96,10 +96,10 @@ export class LoginAuthService {
             user: {
                 id: user.id,
                 email: user.email,
-                fname: user.firstname,
-                lname: user.lastname,
+                fname: user.firstName,
+                lname: user.lastName,
                 role: user.role,
-                imageurl: user.profileimage,
+                imageurl: user.profileImage,
             },
             token: token
         }

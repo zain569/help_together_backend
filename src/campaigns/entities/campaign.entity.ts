@@ -60,5 +60,5 @@ export class CampaignEntity {
     createdAt: Date;
 
     @UpdateDateColumn()
-    updatedDate: Date;
+    updatedAt: Date;
 }

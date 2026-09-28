@@ -24,7 +24,7 @@ export class FaqService {
         isActive: true
       },
       order: {
-        displayOver: 'ASC'
+        displayOrder: 'ASC'
       }
     });
     return faqs;
@@ -81,7 +81,7 @@ export class FaqService {
   async findAllByAdmin() {
     const faqs = await this.faqRep.find({
       order: {
-        displayOver: 'ASC'
+        displayOrder: 'ASC'
       }
     });
     return faqs;

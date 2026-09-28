@@ -12,7 +12,7 @@ export class Faq {
     answer: string;
 
     @Column({ type: 'int', default: 0 })
-    displayOver: number;
+    displayOrder: number;
 
     @Column({ default: true })
     isActive: boolean

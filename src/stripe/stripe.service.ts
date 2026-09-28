@@ -1,13 +1,16 @@
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import Stripe from 'stripe';
 
 @Injectable()
 export class StripeService {
   private stripe: Stripe;
 
-  constructor() {
+  constructor(
+    private readonly configService: ConfigService,
+  ) {
     this.stripe = new Stripe(
-      process.env.STRIPE_SECRET_KEY!,
+      this.configService.get<string>('STRIPE_SECRET_KEY')!
     )
   }
   async createCheckoutSession(
@@ -50,11 +53,11 @@ export class StripeService {
   constructWebhookEvent(
     payload: Buffer,
     signature: string,
-  ){
+  ) {
     return this.stripe.webhooks.constructEvent(
       payload,
       signature,
-      process.env.STRIPE_WEBHOOK_SECRET!,
+      this.configService.get<string>('STRIPE_WEBHOOK_SECRET')!,
     )
   }
 }

@@ -4,11 +4,11 @@ import { UserRole } from "../../user/user.entity.js";
 export class RegisterDto {
     @IsNotEmpty()
     @IsString()
-    firstname: string;
+    firstName: string;
 
     @IsNotEmpty()
     @IsString()
-    lastname: string;
+    lastName: string;
 
     @IsNotEmpty()
     @IsEmail()
@@ -21,7 +21,7 @@ export class RegisterDto {
 
     @IsOptional()
     @IsString()
-    profileimage: string;
+    profileImage: string;
 
     @IsIn(['user'])
     role: UserRole;

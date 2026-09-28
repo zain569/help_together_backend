@@ -15,10 +15,10 @@ export class User {
     id: string;
 
     @Column()
-    firstname: string;
+    firstName: string;
 
     @Column()
-    lastname: string;
+    lastName: string;
 
     @Column({unique: true})
     email: string;
@@ -37,5 +37,5 @@ export class User {
     role: UserRole;
 
     @Column({nullable: true})
-    profileimage: string
+    profileImage: string
 }

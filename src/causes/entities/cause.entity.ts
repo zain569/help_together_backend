@@ -1,4 +1,4 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import type { Relation } from "typeorm";
 import { CampaignEntity } from "../../campaigns/entities/campaign.entity.js";
 
@@ -28,4 +28,7 @@ export class CauseEntity {
     @OneToMany(() => CampaignEntity,
         (campaign) => campaign.cause)
     campaigns: Relation<CampaignEntity>
+
+    @CreateDateColumn()
+    createdAt: Date;
 }
