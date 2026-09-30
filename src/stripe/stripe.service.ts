@@ -17,6 +17,8 @@ export class StripeService {
     amount: number,
     donationId: string,
   ) {
+
+    const frontend_url = this.configService.get<string>('FRONTEND_URL')!
     const session = await this.stripe.checkout.sessions.create({
       mode: 'payment',
 
@@ -39,9 +41,9 @@ export class StripeService {
         donationId,
       },
 
-      success_url: `https://help-together.netlify.app/payment-success`,
+      success_url: `${frontend_url}payment-success`,
 
-      cancel_url: `https://help-together.netlify.app/payment-cancel`
+      cancel_url: `${frontend_url}payment-cancel`
     });
 
     return {

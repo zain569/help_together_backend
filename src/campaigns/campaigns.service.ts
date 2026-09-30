@@ -58,6 +58,22 @@ export class CampaignsService {
     };
   }
 
+  async fundedCampaign() {
+    const campaigns = await this.compainRep.find({
+      where: {
+        status: CampaignStatus.FUNDED,
+      },
+      order: {
+        createdAt: 'DESC',
+      },
+      relations: {
+        cause: true,
+      }
+    });
+
+    return campaigns;
+  }
+
   async findOne(id: string) {
     const campaign = await this.compainRep.findOne({ where: { id: id } });
 

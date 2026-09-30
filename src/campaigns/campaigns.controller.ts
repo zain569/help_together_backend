@@ -39,6 +39,11 @@ export class CampaignsController {
     return this.campaignsService.findAll(pageNumber, limitNumber);
   }
 
+  @Get('funded_campaigns')
+  fundedCampaigns(){
+    return this.campaignsService.fundedCampaign();
+  }
+
   @Get('search')
   searchByTitle(@Query('title') title: string) {
     return this.campaignsService.searchByTitle(title);
