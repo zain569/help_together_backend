@@ -16,6 +16,7 @@ import { FaqModule } from './faq/faq.module.js';
 import { TestimonialModule } from './testimonial/testimonial.module.js';
 import { CloudinaryModule } from './cloudinary/cloudinary.module.js';
 import { StripeModule } from './stripe/stripe.module.js';
+import { UpdateModule } from './update/update.module.js';
 
 @Module({
   imports: [
@@ -60,7 +61,8 @@ import { StripeModule } from './stripe/stripe.module.js';
     FaqModule,
     TestimonialModule,
     CloudinaryModule,
-    StripeModule
+    StripeModule,
+    UpdateModule
   ],
   controllers: [AppController],
   providers: [AppService],
