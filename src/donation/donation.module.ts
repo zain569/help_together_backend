@@ -8,11 +8,12 @@ import { CampaignEntity } from '../campaigns/entities/campaign.entity.js';
 import { AuthModule } from '../auth/auth.module.js';
 import { ServiceGift } from '../service-gifts/entities/service-gift.entity.js';
 import { StripeModule } from '../stripe/stripe.module.js';
+import { SubscriptionEntity } from './entities/subscriptions.entity.js';
 
 @Module({
   imports: [
     AuthModule,
-    TypeOrmModule.forFeature([DonationEntity, User, CampaignEntity, ServiceGift]),
+    TypeOrmModule.forFeature([DonationEntity, User, CampaignEntity, ServiceGift, SubscriptionEntity]),
     StripeModule
   ],
   controllers: [DonationController],

@@ -33,11 +33,15 @@ export class UpdateController {
     return this.updateService.findOne(id);
   }
 
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateUpdateDto: UpdateUpdateDto) {
     return this.updateService.update(id, updateUpdateDto);
   }
 
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.updateService.remove(id);

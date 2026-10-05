@@ -9,6 +9,11 @@ import { CampaignEntity } from '../campaigns/entities/campaign.entity.js';
 import { ServiceGift } from '../service-gifts/entities/service-gift.entity.js';
 import { UserRole } from '../user/user.entity.js';
 import { StripeService } from '../stripe/stripe.service.js';
+import {
+  SubscriptionEntity,
+  SubscriptionFrequency,
+  SubscriptionStatus,
+} from './entities/subscriptions.entity.js';
 
 @Injectable()
 export class DonationService {
@@ -24,6 +29,11 @@ export class DonationService {
 
     @InjectRepository(ServiceGift)
     private readonly SerGifRep: Repository<ServiceGift>,
+
+    // Add this repository to DonationService constructor
+
+    @InjectRepository(SubscriptionEntity)
+    private readonly subscriptionRep: Repository<SubscriptionEntity>,
 
     private readonly stripeService: StripeService
   ) { }
@@ -260,5 +270,157 @@ export class DonationService {
     return {
       message: `campaign on ${id} is Deleted Successsfully`,
     };
+  }
+
+  async createSubscription(
+    userId: string,
+    frequency: SubscriptionFrequency,
+  ) {
+    const user = await this.userRep.findOne({
+      where: {
+        id: userId,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User Not Found');
+    }
+
+    const subscription = this.subscriptionRep.create({
+      user,
+      frequency,
+      paymentStatus: SubscriptionStatus.PENDING,
+    });
+
+    const savedSubscription =
+      await this.subscriptionRep.save(subscription);
+
+    try {
+      const session =
+        await this.stripeService.createSubscription(
+          user.email,
+          frequency,
+          savedSubscription.id,
+        );
+
+      savedSubscription.stripeSessionId = session.sessionId;
+
+      await this.subscriptionRep.save(savedSubscription);
+
+      return {
+        message:
+          'Subscription created. Complete payment through Stripe.',
+        subscriptionId: savedSubscription.id,
+        paymentStatus: savedSubscription.paymentStatus,
+        frequency: savedSubscription.frequency,
+        url: session.url,
+      };
+    } catch (error) {
+      savedSubscription.paymentStatus =
+        SubscriptionStatus.FAILED;
+
+      await this.subscriptionRep.save(savedSubscription);
+
+      throw error;
+    }
+  }
+
+  async markSubscriptionAsSucceeded(
+    subscriptionId: string,
+    stripeSubscriptionId: string,
+    stripeCustomerId?: string,
+  ) {
+    const subscription =
+      await this.subscriptionRep.findOne({
+        where: {
+          id: subscriptionId,
+        },
+      });
+
+    if (!subscription) {
+      throw new NotFoundException('Subscription Not Found');
+    }
+
+    if (
+      subscription.paymentStatus ===
+      SubscriptionStatus.SUCCEEDED
+    ) {
+      return subscription;
+    }
+
+    subscription.paymentStatus =
+      SubscriptionStatus.SUCCEEDED;
+    subscription.stripeSubscriptionId =
+      stripeSubscriptionId;
+
+    if (stripeCustomerId) {
+      subscription.stripeCustomerId = stripeCustomerId;
+    }
+
+    return this.subscriptionRep.save(subscription);
+  }
+
+  async markSubscriptionAsFailedBySession(
+    stripeSessionId: string,
+  ) {
+    const subscription =
+      await this.subscriptionRep.findOne({
+        where: {
+          stripeSessionId,
+        },
+      });
+
+    if (!subscription) {
+      return;
+    }
+
+    if (
+      subscription.paymentStatus ===
+      SubscriptionStatus.SUCCEEDED
+    ) {
+      return subscription;
+    }
+
+    subscription.paymentStatus = SubscriptionStatus.FAILED;
+
+    return this.subscriptionRep.save(subscription);
+  }
+
+  async markSubscriptionAsFailed(
+    stripeSubscriptionId: string,
+  ) {
+    const subscription =
+      await this.subscriptionRep.findOne({
+        where: {
+          stripeSubscriptionId,
+        },
+      });
+
+    if (!subscription) {
+      return;
+    }
+
+    subscription.paymentStatus = SubscriptionStatus.FAILED;
+
+    return this.subscriptionRep.save(subscription);
+  }
+
+  async markSubscriptionAsCanceled(
+    stripeSubscriptionId: string,
+  ) {
+    const subscription =
+      await this.subscriptionRep.findOne({
+        where: {
+          stripeSubscriptionId,
+        },
+      });
+
+    if (!subscription) {
+      return;
+    }
+
+    subscription.paymentStatus = SubscriptionStatus.CANCELED;
+
+    return this.subscriptionRep.save(subscription);
   }
 }

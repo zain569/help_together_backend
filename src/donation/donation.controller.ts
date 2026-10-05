@@ -9,6 +9,7 @@ import { Roles } from '../campaigns/guards/roles.decorator.js';
 import { UserRole } from '../user/user.entity.js';
 import { StripeService } from '../stripe/stripe.service.js';
 import Stripe from 'stripe';
+import { SubscriptionFrequency } from './entities/subscriptions.entity.js';
 
 @Controller('donation')
 export class DonationController {
@@ -52,6 +53,20 @@ export class DonationController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.donationService.remove(id);
+  }
+
+  // Replace createSubscription() in DonationController
+
+  @Post('subscribe')
+  @UseGuards(AuthGuard)
+  async createSubscription(
+    @Req() req: any,
+    @Body() body: { frequency: SubscriptionFrequency },
+  ) {
+    return this.donationService.createSubscription(
+      req.user.id,
+      body.frequency,
+    );
   }
 
   //stripe Webhook
@@ -104,6 +119,64 @@ export class DonationController {
       await this.donationService.markAsFailed(
         donationId,
       )
+    }
+
+    if (event.type === 'checkout.session.completed') {
+      const session =
+        event.data.object as Stripe.Checkout.Session;
+
+      const subscriptionId =
+        session.metadata?.subscriptionId;
+
+      const stripeSubscriptionId =
+        typeof session.subscription === 'string'
+          ? session.subscription
+          : session.subscription?.id;
+
+      const stripeCustomerId =
+        typeof session.customer === 'string'
+          ? session.customer
+          : session.customer?.id;
+
+      if (subscriptionId && stripeSubscriptionId) {
+        await this.donationService.markSubscriptionAsSucceeded(
+          subscriptionId,
+          stripeSubscriptionId,
+          stripeCustomerId,
+        );
+      }
+    }
+
+    if (event.type === 'checkout.session.expired') {
+      const session =
+        event.data.object as Stripe.Checkout.Session;
+
+      await this.donationService
+        .markSubscriptionAsFailedBySession(session.id);
+    }
+
+    if (event.type === 'invoice.payment_failed') {
+      const invoice = event.data.object as Stripe.Invoice;
+
+      const stripeSubscriptionId =
+        typeof (invoice as any).subscription === 'string'
+          ? (invoice as any).subscription
+          : (invoice as any).subscription?.id;
+
+      if (stripeSubscriptionId) {
+        await this.donationService.markSubscriptionAsFailed(
+          stripeSubscriptionId,
+        );
+      }
+    }
+
+    if (event.type === 'customer.subscription.deleted') {
+      const stripeSubscription =
+        event.data.object as Stripe.Subscription;
+
+      await this.donationService.markSubscriptionAsCanceled(
+        stripeSubscription.id,
+      );
     }
 
     return {
