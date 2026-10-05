@@ -9,6 +9,7 @@ import { Faq } from '../faq/entities/faq.entity.js';
 import { CauseEntity } from '../causes/entities/cause.entity.js';
 import { ContactEntity } from '../contact/entities/contact.entity.js';
 import { Testimonial } from '../testimonial/entities/testimonial.entity.js';
+import { SubscriptionEntity } from '../donation/entities/subscriptions.entity.js';
 
 @Injectable()
 export class AdminService {
@@ -36,6 +37,9 @@ export class AdminService {
 
     @InjectRepository(Testimonial)
     private readonly testimonial: Repository<Testimonial>,
+
+    @InjectRepository(SubscriptionEntity)
+    private readonly subscriptions: Repository<SubscriptionEntity>,
   ) { }
 
   async adminDashboard() {
@@ -125,6 +129,15 @@ export class AdminService {
       },
     });
 
+    const subscriptions = await this.subscriptions.find({
+      order: {
+        createdAt: 'DESC'
+      },
+      relations: {
+        user: true,
+      }
+    })
+
     return {
       collectedAmnount,
       totalUser,
@@ -136,6 +149,7 @@ export class AdminService {
       causes,
       contacts,
       testimonials,
+      subscriptions,
     };
   }
 

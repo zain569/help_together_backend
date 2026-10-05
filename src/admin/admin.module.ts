@@ -11,10 +11,11 @@ import { Faq } from '../faq/entities/faq.entity.js';
 import { CauseEntity } from '../causes/entities/cause.entity.js';
 import { ContactEntity } from '../contact/entities/contact.entity.js';
 import { Testimonial } from '../testimonial/entities/testimonial.entity.js';
+import { SubscriptionEntity } from '../donation/entities/subscriptions.entity.js';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([CampaignEntity, User, DonationEntity, ServiceGift, Faq, CauseEntity, ContactEntity, Testimonial]),
+    TypeOrmModule.forFeature([CampaignEntity, User, DonationEntity, ServiceGift, Faq, CauseEntity, ContactEntity, Testimonial, SubscriptionEntity]),
     AuthModule
   ],
   controllers: [AdminController],
