@@ -448,4 +448,68 @@ export class DonationService {
 
     return subscription;
   }
+
+  async cancelSubscription(
+    subscriptionId: string,
+    userId: string,
+  ) {
+    // The API may receive either the local subscription UUID or Stripe's
+    // subscription ID. Do not pass a Stripe ID to the UUID column, because
+    // PostgreSQL will reject it before TypeORM can return a not-found result.
+    const isDatabaseUuid =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+        subscriptionId,
+      );
+
+    const subscriptionRecord =
+      await this.subscriptionRep.findOne({
+        where: {
+          ...(isDatabaseUuid
+            ? { id: subscriptionId }
+            : { stripeSubscriptionId: subscriptionId }),
+          user: {
+            id: userId,
+          },
+        },
+        relations: {
+          user: true
+        },
+      });
+
+    if (!subscriptionRecord) {
+      throw new NotFoundException(
+        'Subscription not found',
+      );
+    }
+
+    if (subscriptionRecord.paymentStatus === SubscriptionStatus.CANCELED) {
+      return {
+        message: 'Subscription is already cancelled',
+        subscriptionId: subscriptionRecord.id,
+      };
+    }
+
+    if (!subscriptionRecord.stripeSubscriptionId) {
+      throw new BadRequestException(
+        'This subscription does not have a Stripe subscription',
+      );
+    }
+
+    const subscription =
+      await this.stripeService.cancelSubscription(
+        subscriptionRecord.stripeSubscriptionId,
+      );
+
+    subscriptionRecord.paymentStatus =
+      SubscriptionStatus.CANCELED;
+
+    await this.subscriptionRep.save(
+      subscriptionRecord,
+    );
+
+    return {
+      message: 'Subscription cancelled successfully',
+      subscriptionId: subscription.id,
+    };
+  }
 }

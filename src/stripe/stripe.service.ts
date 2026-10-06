@@ -120,4 +120,15 @@ export class StripeService {
       url: session.url,
     };
   }
+
+  async cancelSubscription(
+    subscriptionId: string,
+  ) {
+    const subscription =
+      await this.stripe.subscriptions.cancel(
+        subscriptionId,
+      );
+
+    return subscription;
+  }
 }

@@ -195,4 +195,16 @@ export class DonationController {
       received: true,
     }
   }
+
+  @Delete('unsubscribe/:subscriptionId')
+  @UseGuards(AuthGuard)
+  async cancelSubscription(
+    @Req() req : any,
+    @Param('subscriptionId') subscriptionId: string,
+  ) {
+    return this.donationService.cancelSubscription(
+      subscriptionId,
+      req.user.id,
+    );
+  }
 }
