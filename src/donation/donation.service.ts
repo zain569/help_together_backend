@@ -9,11 +9,7 @@ import { CampaignEntity } from '../campaigns/entities/campaign.entity.js';
 import { ServiceGift } from '../service-gifts/entities/service-gift.entity.js';
 import { UserRole } from '../user/user.entity.js';
 import { StripeService } from '../stripe/stripe.service.js';
-import {
-  SubscriptionEntity,
-  SubscriptionFrequency,
-  SubscriptionStatus,
-} from './entities/subscriptions.entity.js';
+import { SubscriptionEntity, SubscriptionFrequency, SubscriptionStatus } from './entities/subscriptions.entity.js';
 
 @Injectable()
 export class DonationService {
@@ -270,11 +266,29 @@ export class DonationService {
     return {
       message: `campaign on ${id} is Deleted Successsfully`,
     };
+  };
+
+  async mySubscriptions(id: string) {
+    const subscriptions = await this.subscriptionRep.find({
+      where: {
+        user: {
+          id: id
+        },
+      },
+      order: {
+        createdAt: 'DESC'
+      },
+      relations: {
+        user: true,
+      }
+    });
+
+    return subscriptions;
   }
 
   async createSubscription(
     userId: string,
-    frequency: SubscriptionFrequency,
+    data: any,
   ) {
     const user = await this.userRep.findOne({
       where: {
@@ -288,22 +302,22 @@ export class DonationService {
 
     const subscription = this.subscriptionRep.create({
       user,
-      frequency,
+      frequency: data.frequency,
+      subscriptionType: data.subscriptionType,
       paymentStatus: SubscriptionStatus.PENDING,
     });
 
-    const savedSubscription =
-      await this.subscriptionRep.save(subscription);
+    const savedSubscription = await this.subscriptionRep.save(subscription);
 
     try {
-      const session =
-        await this.stripeService.createSubscription(
-          user.email,
-          frequency,
-          savedSubscription.id,
-        );
+      const session = await this.stripeService.createSubscription(
+        user.email,
+        data.frequency,
+        savedSubscription.id,
+      );
 
-      savedSubscription.stripeSessionId = session.sessionId;
+      savedSubscription.stripeSessionId =
+        session.sessionId;
 
       await this.subscriptionRep.save(savedSubscription);
 
@@ -316,8 +330,7 @@ export class DonationService {
         url: session.url,
       };
     } catch (error) {
-      savedSubscription.paymentStatus =
-        SubscriptionStatus.FAILED;
+      savedSubscription.paymentStatus = SubscriptionStatus.FAILED;
 
       await this.subscriptionRep.save(savedSubscription);
 
@@ -341,20 +354,15 @@ export class DonationService {
       throw new NotFoundException('Subscription Not Found');
     }
 
-    if (
-      subscription.paymentStatus ===
-      SubscriptionStatus.SUCCEEDED
-    ) {
-      return subscription;
-    }
-
     subscription.paymentStatus =
       SubscriptionStatus.SUCCEEDED;
+
     subscription.stripeSubscriptionId =
       stripeSubscriptionId;
 
     if (stripeCustomerId) {
-      subscription.stripeCustomerId = stripeCustomerId;
+      subscription.stripeCustomerId =
+        stripeCustomerId;
     }
 
     return this.subscriptionRep.save(subscription);
@@ -381,7 +389,8 @@ export class DonationService {
       return subscription;
     }
 
-    subscription.paymentStatus = SubscriptionStatus.FAILED;
+    subscription.paymentStatus =
+      SubscriptionStatus.FAILED;
 
     return this.subscriptionRep.save(subscription);
   }
@@ -400,7 +409,8 @@ export class DonationService {
       return;
     }
 
-    subscription.paymentStatus = SubscriptionStatus.FAILED;
+    subscription.paymentStatus =
+      SubscriptionStatus.FAILED;
 
     return this.subscriptionRep.save(subscription);
   }
@@ -419,8 +429,23 @@ export class DonationService {
       return;
     }
 
-    subscription.paymentStatus = SubscriptionStatus.CANCELED;
+    subscription.paymentStatus =
+      SubscriptionStatus.CANCELED;
 
     return this.subscriptionRep.save(subscription);
+  }
+
+  async getSubscriptionData(sessionId: string) {
+    const subscription = await this.subscriptionRep.find({
+      where: {
+        stripeSessionId: sessionId,
+      },
+    });
+
+    if (!subscription) {
+      throw new NotFoundException("Subscription on this id is not found")
+    };
+
+    return subscription;
   }
 }

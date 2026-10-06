@@ -10,6 +10,7 @@ import { UserRole } from '../user/user.entity.js';
 import { StripeService } from '../stripe/stripe.service.js';
 import Stripe from 'stripe';
 import { SubscriptionFrequency } from './entities/subscriptions.entity.js';
+import { CreateSubscriptionDto } from './dto/createSubscription.dto.js';
 
 @Controller('donation')
 export class DonationController {
@@ -55,18 +56,29 @@ export class DonationController {
     return this.donationService.remove(id);
   }
 
-  // Replace createSubscription() in DonationController
+  @UseGuards(AuthGuard)
+  @Get('mysubscription/:id')
+  mySubscriptions(@Param('id') id: string, @Req() request: Request) {
+    const user = (request as Request & { user: { id: string } }).user;
+    return this.donationService.mySubscriptions(id)
+  }
 
   @Post('subscribe')
   @UseGuards(AuthGuard)
   async createSubscription(
     @Req() req: any,
-    @Body() body: { frequency: SubscriptionFrequency },
+    @Body() createSubscriptionDto: CreateSubscriptionDto,
   ) {
     return this.donationService.createSubscription(
       req.user.id,
-      body.frequency,
+      createSubscriptionDto,
     );
+  }
+
+  @Get('subscriptiondata/:sessionid')
+  @UseGuards(AuthGuard)
+  async getSubscriptionData(@Param('sessionid') sessionid: string) {
+    return this.donationService.getSubscriptionData(sessionid);
   }
 
   //stripe Webhook

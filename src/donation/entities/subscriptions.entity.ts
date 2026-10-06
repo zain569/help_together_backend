@@ -45,6 +45,9 @@ export class SubscriptionEntity {
   @Column({ nullable: true })
   stripeSessionId: string;
 
+  @Column({nullable: true})
+  subscriptionType: string;
+
   @Column({ nullable: true })
   stripeSubscriptionId: string;
 
