@@ -1,5 +1,4 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, Headers } from '@nestjs/common';
-import type { Request } from 'express';
 import { DonationService } from './donation.service.js';
 import { CreateDonationDto } from './dto/create-donation.dto.js';
 import { UpdateDonationDto } from './dto/update-donation.dto.js';
@@ -11,12 +10,16 @@ import { StripeService } from '../stripe/stripe.service.js';
 import Stripe from 'stripe';
 import { SubscriptionFrequency } from './entities/subscriptions.entity.js';
 import { CreateSubscriptionDto } from './dto/createSubscription.dto.js';
+import { ConfigService } from '@nestjs/config';
+import { Res } from '@nestjs/common';
+import type { Request, Response as ExpressResponse } from 'express';
 
 @Controller('donation')
 export class DonationController {
   constructor(
     private readonly donationService: DonationService,
     private readonly stripeService: StripeService,
+    private readonly configService: ConfigService,
   ) { }
 
   @Post()
@@ -210,8 +213,25 @@ export class DonationController {
 
   @Post('jazzcash/callback')
   async jazzCashCallback(
-    @Body() body: Record<string, string>
+    @Body() body: Record<string, string>,
+    @Res() res: ExpressResponse,
   ) {
-    return this.donationService.handleJazzCashCallback(body)
+    const frontendUrl = (this.configService.get<string>('FRONTEND_URL')!).replace(/\/+$/, '');
+
+    try {
+      const result = await this.donationService.handleJazzCashCallback(body);
+
+      const page = result.success
+        ? '/payment-success'
+        : '/payment-cancel';
+
+      const redirectUrl = `${frontendUrl}${page}`;
+
+      return res.redirect(303, redirectUrl);
+    } catch (error) {
+      console.error('JazzCash callback failed:', error);
+
+      return res.redirect(303, `${frontendUrl}/payment-cancel`);
+    }
   }
 }

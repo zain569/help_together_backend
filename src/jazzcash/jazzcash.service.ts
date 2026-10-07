@@ -94,52 +94,54 @@ export class JazzcashService {
     }
   }
 
+  // Make a time zone for a jazzcash
+
+  private formatJazzCashDateTime(date: Date): string {
+    const parts = new Intl.DateTimeFormat('en-GB', {
+      timeZone: 'Asia/Karachi',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hourCycle: 'h23',
+    }).formatToParts(date);
+
+    const values = Object.fromEntries(
+      parts
+        .filter((part) => part.type !== 'literal')
+        .map((part) => [part.type, part.value]),
+    );
+
+    return (
+      values.year +
+      values.month +
+      values.day +
+      values.hour +
+      values.minute +
+      values.second
+    );
+  }
+
   // TRANSACTION REFERENCE
 
   private generateTransactionReference(): string {
-    const now = new Date();
-
-    const year = now.getFullYear().toString();
-    const month = String(now.getMonth() + 1,).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    const hours = String(now.getHours()).padStart(2, '0');
-    const minute = String(now.getMinutes()).padStart(2, '0');
-    const second = String(now.getSeconds()).padStart(2, '0');
-
-    return (
-      `HT${year}${month}${day}` + `${hours}${minute}${second}`
-    );
+    return `HT${this.formatJazzCashDateTime(new Date())}`
   };
 
   // TRANSACTION DATE TIME
 
   private getJazzCashDateTime(): string {
-    const now = new Date();
-
-    return (
-      now.getFullYear().toString() +
-      String(now.getMonth() + 1).padStart(2, '0') +
-      String(now.getDate()).padStart(2, '0') +
-      String(now.getHours()).padStart(2, '0') +
-      String(now.getMinutes()).padStart(2, '0') +
-      String(now.getSeconds()).padStart(2, '0')
-    );
+    return this.formatJazzCashDateTime(new Date())
   };
 
   // EXPIRY DATE TIME
 
   private getJazzCashExpiryDateTime(): string {
-    const expiry = new Date(Date.now() + 60 * 60 * 1000);
-
-    return (
-      expiry.getFullYear().toString() +
-
-      String(expiry.getMonth() + 1).padStart(2, '0') +
-      String(expiry.getDate()).padStart(2, '0') +
-      String(expiry.getHours()).padStart(2, '0') +
-      String(expiry.getMinutes()).padStart(2, '0') +
-      String(expiry.getSeconds()).padStart(2, '0')
-    );
+    return this.formatJazzCashDateTime(
+      new Date(Date.now() + 60 * 60 * 1000)
+    )
   };
 
   // AMOUNT
