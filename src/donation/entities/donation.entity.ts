@@ -14,6 +14,7 @@ export enum PaymentStatus {
 export enum PaymentMethod {
     STRIPE = 'STRIPE',
     MANUAL = 'MANUAL',
+    JAZZCASH = 'JAZZCASH',
 }
 
 export enum DonationType {
@@ -65,6 +66,9 @@ export class DonationEntity {
         default: DonationType.GENERAL,
     })
     donationType: DonationType;
+
+    @Column({ nullable: true })
+    jazzCashTransactionId: string;
 
     @Column({ nullable: true })
     stripeSessionId: string;

@@ -9,14 +9,17 @@ import { AuthModule } from '../auth/auth.module.js';
 import { ServiceGift } from '../service-gifts/entities/service-gift.entity.js';
 import { StripeModule } from '../stripe/stripe.module.js';
 import { SubscriptionEntity } from './entities/subscriptions.entity.js';
+import { JazzcashModule } from '../jazzcash/jazzcash.module.js';
 
 @Module({
   imports: [
     AuthModule,
     TypeOrmModule.forFeature([DonationEntity, User, CampaignEntity, ServiceGift, SubscriptionEntity]),
-    StripeModule
+    StripeModule,
+    JazzcashModule
   ],
   controllers: [DonationController],
   providers: [DonationService],
+  exports: [DonationService],
 })
 export class DonationModule { }

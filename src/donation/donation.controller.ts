@@ -199,12 +199,19 @@ export class DonationController {
   @Delete('unsubscribe/:subscriptionId')
   @UseGuards(AuthGuard)
   async cancelSubscription(
-    @Req() req : any,
+    @Req() req: any,
     @Param('subscriptionId') subscriptionId: string,
   ) {
     return this.donationService.cancelSubscription(
       subscriptionId,
       req.user.id,
     );
+  }
+
+  @Post('jazzcash/callback')
+  async jazzCashCallback(
+    @Body() body: Record<string, string>
+  ) {
+    return this.donationService.handleJazzCashCallback(body)
   }
 }

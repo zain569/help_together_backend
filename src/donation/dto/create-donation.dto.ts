@@ -1,4 +1,5 @@
-import { IsIn, IsNumber, IsOptional, IsString, IsUUID, Min } from "class-validator";
+import { IsEnum, IsIn, IsNumber, IsOptional, IsString, IsUUID, Min } from "class-validator";
+import { PaymentMethod } from "../entities/donation.entity.js";
 
 export class CreateDonationDto {
     @IsNumber()
@@ -19,4 +20,7 @@ export class CreateDonationDto {
     @IsOptional()
     @IsUUID()
     serviceGiftId?: string;
+
+    @IsEnum(PaymentMethod)
+    paymentMethod?: string;
 }

@@ -17,6 +17,7 @@ import { TestimonialModule } from './testimonial/testimonial.module.js';
 import { CloudinaryModule } from './cloudinary/cloudinary.module.js';
 import { StripeModule } from './stripe/stripe.module.js';
 import { UpdateModule } from './update/update.module.js';
+import { JazzcashModule } from './jazzcash/jazzcash.module.js';
 
 @Module({
   imports: [
@@ -62,7 +63,8 @@ import { UpdateModule } from './update/update.module.js';
     TestimonialModule,
     CloudinaryModule,
     StripeModule,
-    UpdateModule
+    UpdateModule,
+    JazzcashModule
   ],
   controllers: [AppController],
   providers: [AppService],

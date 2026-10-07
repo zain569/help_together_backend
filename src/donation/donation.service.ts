@@ -10,6 +10,7 @@ import { ServiceGift } from '../service-gifts/entities/service-gift.entity.js';
 import { UserRole } from '../user/user.entity.js';
 import { StripeService } from '../stripe/stripe.service.js';
 import { SubscriptionEntity, SubscriptionFrequency, SubscriptionStatus } from './entities/subscriptions.entity.js';
+import { JazzcashService } from '../jazzcash/jazzcash.service.js';
 
 @Injectable()
 export class DonationService {
@@ -26,12 +27,12 @@ export class DonationService {
     @InjectRepository(ServiceGift)
     private readonly SerGifRep: Repository<ServiceGift>,
 
-    // Add this repository to DonationService constructor
-
     @InjectRepository(SubscriptionEntity)
     private readonly subscriptionRep: Repository<SubscriptionEntity>,
 
-    private readonly stripeService: StripeService
+    private readonly stripeService: StripeService,
+
+    private readonly jazzcashService: JazzcashService
   ) { }
   async create(createDonationDto: CreateDonationDto, authenticatedUserId: string, authenticatedUserRole: UserRole) {
     const {
@@ -91,40 +92,75 @@ export class DonationService {
 
     //Create Pending Donation
 
-    const donation = this.donationRep.create({
-      amount,
-      donationType: donationType as DonationType,
-      currency: 'PKR',
-      paymentStatus: PaymentStatus.PENDING,
-      paymentMethod: PaymentMethod.STRIPE,
-      user,
-      campaign: campaign ?? undefined,
-      serviceGift: serviceGift ?? undefined
-    })
+    if (createDonationDto.paymentMethod === PaymentMethod.STRIPE) {
+      const donation = this.donationRep.create({
+        amount,
+        donationType: donationType as DonationType,
+        currency: 'PKR',
+        paymentStatus: PaymentStatus.PENDING,
+        paymentMethod: PaymentMethod.STRIPE,
+        user,
+        campaign: campaign ?? undefined,
+        serviceGift: serviceGift ?? undefined
+      })
 
-    const savedDonation = await this.donationRep.save(donation);
+      const savedDonation = await this.donationRep.save(donation);
 
-    //Create Stripe Payment
+      //Create Stripe Payment
 
-    const session = await this.stripeService.createCheckoutSession(
-      Number(amount),
-      savedDonation.id
-    );
+      const session = await this.stripeService.createCheckoutSession(
+        Number(amount),
+        savedDonation.id
+      );
 
-    //Add stripe session ID
+      //Add stripe session ID
 
-    savedDonation.stripeSessionId = session.sessionId;
+      savedDonation.stripeSessionId = session.sessionId;
 
-    await this.donationRep.save(savedDonation);
+      await this.donationRep.save(savedDonation);
 
-    return {
-      message: 'Donation created. Complete payment through Stripe.',
-      donationId: savedDonation.id,
-      amount: savedDonation.amount,
-      currency: savedDonation.currency,
-      paymentStatus: savedDonation.paymentStatus,
-      paymentMethod: savedDonation.paymentMethod,
-      checkoutUrl: session.checkoutUrl,
+      return {
+        message: 'Donation created. Complete payment through Stripe.',
+        donationId: savedDonation.id,
+        amount: savedDonation.amount,
+        currency: savedDonation.currency,
+        paymentStatus: savedDonation.paymentStatus,
+        paymentMethod: savedDonation.paymentMethod,
+        checkoutUrl: session.checkoutUrl,
+      }
+    } else if (createDonationDto.paymentMethod === PaymentMethod.JAZZCASH) {
+      if (!amount || amount <= 150) {
+        throw new BadRequestException(
+          'Donation amount is Larger then 150 PKR'
+        );
+      };
+
+      const payment = this.jazzcashService.createPayment(Number(amount));
+
+      const donation = this.donationRep.create({
+        amount,
+        donationType: donationType as DonationType,
+        currency: 'PKR',
+        paymentStatus: PaymentStatus.PENDING,
+        paymentMethod: PaymentMethod.JAZZCASH,
+        user,
+        jazzCashTransactionId: payment.transactionReference,
+        campaign: campaign ?? undefined,
+        serviceGift: serviceGift ?? undefined
+      });
+
+      const savedDonation = await this.donationRep.save(donation);
+
+      return {
+        message: 'Donation created. Complete payment through JazzCash',
+        donationId: savedDonation.id,
+        amount: savedDonation.amount,
+        currency: savedDonation.currency,
+        paymentStatus: savedDonation.paymentStatus,
+        paymentMethod: savedDonation.paymentMethod,
+        transactionReference: payment.transactionReference,
+        paymentData: payment.paymentData,
+      }
     }
   }
 
@@ -511,5 +547,43 @@ export class DonationService {
       message: 'Subscription cancelled successfully',
       subscriptionId: subscription.id,
     };
+  }
+
+  async handleJazzCashCallback(
+    response: Record<string, string>
+  ) {
+    const isValid = this.jazzcashService.verifyResponse(response);
+
+    if (!isValid) {
+      throw new BadRequestException('Invalid JazzCash Response');
+    };
+
+    const transactionReference = response.pp_TxnRefNo;
+
+    const donation = await this.donationRep.findOne({
+      where: {
+        jazzCashTransactionId: transactionReference,
+      },
+    });
+
+    if (!donation) {
+      throw new BadRequestException("Donation Not Found");
+    };
+
+    if (response.pp_ResponseCode === '000') {
+      donation.paymentStatus = PaymentStatus.SUCCEEDED;
+    } else {
+      donation.paymentStatus = PaymentStatus.FAILED;
+    };
+
+    await this.donationRep.save(donation)
+
+    return {
+      success: response.pp_ResponseCode === '000',
+      donationId: donation.id,
+      transactionReference,
+      responseCode: response.pp_ResponseCode,
+      responseMessage: response.pp_ResponseMessage,
+    }
   }
 }
