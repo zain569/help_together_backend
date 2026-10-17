@@ -1,4 +1,4 @@
-import { IsBoolean, IsNotEmpty, isNotEmpty, IsNumber, IsOptional, IsString, IsUUID, Min } from "class-validator";
+import { IsBoolean, IsDateString, IsNotEmpty, isNotEmpty, IsNumber, IsOptional, IsString, IsUUID, Min } from "class-validator";
 import { Transform, Type } from "class-transformer";
 
 export class CreateCampaignDto {
@@ -27,4 +27,13 @@ export class CreateCampaignDto {
 
     @IsUUID()
     causeId: string;
+
+
+    @IsOptional()
+    @IsDateString()
+    startDate?: string;
+
+    @IsOptional()
+    @IsDateString()
+    endDate?: string;
 }

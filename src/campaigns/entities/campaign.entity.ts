@@ -56,6 +56,12 @@ export class CampaignEntity {
     })
     status: CampaignStatus;
 
+    @Column({ type: 'date', nullable: true })
+    startDate: string;
+
+    @Column({ type: 'date', nullable: true })
+    endDate: string;
+
     @CreateDateColumn()
     createdAt: Date;
 

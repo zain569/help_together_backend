@@ -23,7 +23,7 @@ export class DonationController {
   ) { }
 
   @Post()
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard) 
   create(@Body() createDonationDto: CreateDonationDto, @Req() request: Request) {
     const user = (request as Request & { user: { id: string; role: UserRole } }).user;
     return this.donationService.create(createDonationDto, user.id, user.role);

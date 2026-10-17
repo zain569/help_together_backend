@@ -45,7 +45,7 @@ import { JazzcashModule } from './jazzcash/jazzcash.module.js';
           database: databaseUrl.pathname.slice(1),
           ssl: true,
           autoLoadEntities: true,
-          synchronize: true,
+          synchronize: false,
           extra: {
             connectionTimeoutMillis: 30000,
             family: 4
