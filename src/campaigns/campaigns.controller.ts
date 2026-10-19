@@ -40,7 +40,7 @@ export class CampaignsController {
   }
 
   @Get('funded_campaigns')
-  fundedCampaigns(){
+  fundedCampaigns() {
     return this.campaignsService.fundedCampaign();
   }
 
@@ -60,17 +60,14 @@ export class CampaignsController {
     @Query('status') status?: string,
     @Query('zakatEligible') zakatEligible?: string,
     @Query('urgent') urgent?: string,
+    @Query('sadaqah') sadaqah?: string,
   ) {
     return this.campaignsService.filterCampaigns(
       causeId,
       status,
-      zakatEligible === undefined
-        ? undefined
-        : zakatEligible === 'true',
-
-      urgent === undefined
-        ? undefined
-        : urgent === 'true',
+      zakatEligible === undefined ? undefined : zakatEligible === 'true',
+      urgent === undefined ? undefined : urgent === 'true',
+      sadaqah === undefined ? undefined : sadaqah === 'true'
     );
   }
 

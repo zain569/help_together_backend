@@ -25,6 +25,10 @@ export class CreateCampaignDto {
     @IsBoolean()
     urgent: boolean;
 
+    @Transform(({ value }) => value === true || value === 'true')
+    @IsBoolean()
+    sadaqah: boolean;
+
     @IsUUID()
     causeId: string;
 

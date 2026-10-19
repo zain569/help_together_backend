@@ -148,6 +148,7 @@ export class CampaignsService {
     status?: string,
     zakatEligible?: boolean,
     urgent?: boolean,
+    sadaqah?: boolean,
   ) {
     const query = this.compainRep
       .createQueryBuilder('campaign')
@@ -174,6 +175,12 @@ export class CampaignsService {
     if (urgent !== undefined) {
       query.andWhere('campaign.urgent = :urgent', {
         urgent,
+      });
+    }
+
+    if (sadaqah !== undefined) {
+      query.andWhere('campaign.sadaqah = :sadaqah', {
+        sadaqah,
       });
     }
 

@@ -49,6 +49,9 @@ export class CampaignEntity {
     @Column({ default: false })
     urgent: boolean;
 
+    @Column({ default: false })
+    sadaqah: boolean;
+
     @Column({
         type: 'enum',
         enum: CampaignStatus,
