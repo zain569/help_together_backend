@@ -1,6 +1,17 @@
 import { IsEnum, IsIn, IsNumber, IsOptional, IsString, IsUUID, Min } from "class-validator";
 import { PaymentMethod } from "../entities/donation.entity.js";
 
+export enum DonationCurrency {
+    PKR = 'PKR',
+    USD = 'USD',
+    EUR = 'EUR',
+    GBP = 'GBP',
+    AED = 'AED',
+    SAR = 'SAR',
+    CAD = 'CAD',
+    AUD = 'AUD',
+}
+
 export class CreateDonationDto {
     @IsNumber()
     @Min(0.01)
@@ -23,4 +34,7 @@ export class CreateDonationDto {
 
     @IsEnum(PaymentMethod)
     paymentMethod?: string;
+
+    @IsEnum(DonationCurrency)
+    currency: DonationCurrency
 }

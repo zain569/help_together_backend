@@ -11,6 +11,7 @@ import { UserRole } from '../user/user.entity.js';
 import { StripeService } from '../stripe/stripe.service.js';
 import { SubscriptionEntity, SubscriptionFrequency, SubscriptionStatus } from './entities/subscriptions.entity.js';
 import { JazzcashService } from '../jazzcash/jazzcash.service.js';
+import { DataSource } from 'typeorm';
 
 @Injectable()
 export class DonationService {
@@ -32,7 +33,9 @@ export class DonationService {
 
     private readonly stripeService: StripeService,
 
-    private readonly jazzcashService: JazzcashService
+    private readonly jazzcashService: JazzcashService,
+
+    private readonly dataSource: DataSource,
   ) { }
   async create(createDonationDto: CreateDonationDto, authenticatedUserId: string, authenticatedUserRole: UserRole) {
     const {
@@ -41,6 +44,7 @@ export class DonationService {
       serviceGiftId,
       amount,
       donationType,
+      currency,
     } = createDonationDto;
 
     // Find user
@@ -96,7 +100,7 @@ export class DonationService {
       const donation = this.donationRep.create({
         amount,
         donationType: donationType as DonationType,
-        currency: 'PKR',
+        currency: currency,
         paymentStatus: PaymentStatus.PENDING,
         paymentMethod: PaymentMethod.STRIPE,
         user,
@@ -140,7 +144,7 @@ export class DonationService {
       const donation = this.donationRep.create({
         amount,
         donationType: donationType as DonationType,
-        currency: 'PKR',
+        currency: currency,
         paymentStatus: PaymentStatus.PENDING,
         paymentMethod: PaymentMethod.JAZZCASH,
         user,
@@ -196,57 +200,60 @@ export class DonationService {
     donationId: string,
     paymentIntentId: string,
   ) {
-    const donation = await this.donationRep.findOne({
-      where: {
-        id: donationId
-      },
+    return await this.dataSource.transaction(async (manager) => {
 
-      relations: {
-        campaign: true,
-        serviceGift: true,
-      },
-    });
-
-    if (!donation) {
-      throw new NotFoundException('Donation Not Found',);
-    };
-
-    //PREVENT DUPLICATE WEBHOOK
-
-    if (donation.paymentStatus === PaymentStatus.SUCCEEDED) {
-      return donation;
-    };
-
-    //UPDATE PAYMENT STATUS
-
-    donation.paymentStatus = PaymentStatus.SUCCEEDED;
-
-    donation.stripePaymentIntentId = paymentIntentId;
-
-    await this.donationRep.save(donation);
-
-    if (donation.campaign) {
-      const campaign = await this.campaignRep.findOne({
-        where: {
-          id: donation.campaign.id,
+      const donation = await manager.findOne(DonationEntity, {
+        where: { id: donationId },
+        relations: {
+          campaign: true,
+          serviceGift: true,
         },
+        lock: { mode: 'pessimistic_write' },
       });
 
-      if (campaign) {
-        const donationAmount = Number(donation.amount);
-
-        campaign.collectedAmount = Number(campaign.collectedAmount) + donationAmount;
-
-        campaign.remainingAmount = Number(campaign.goalAmount) - Number(campaign.collectedAmount);
-
-        if (campaign.remainingAmount < 0) {
-          campaign.remainingAmount = 0;
-        };
-
-        await this.campaignRep.save(campaign);
+      if (!donation) {
+        throw new NotFoundException('Donation Not Found');
       }
-    }
-  };
+
+      // Prevent duplicate webhook processing
+      if (donation.paymentStatus === PaymentStatus.SUCCEEDED) {
+        return donation;
+      }
+
+      if (donation.paymentStatus !== PaymentStatus.PENDING) {
+        throw new BadRequestException(
+          'Donation cannot be marked as succeeded',
+        );
+      }
+
+      // Update donation status
+      donation.paymentStatus = PaymentStatus.SUCCEEDED;
+
+      await manager.save(DonationEntity, donation);
+
+      // Update campaign only once
+      if (donation.campaign) {
+        const campaign = await manager.findOne(CampaignEntity, {
+          where: { id: donation.campaign.id },
+          lock: { mode: 'pessimistic_write' },
+        });
+
+        if (campaign) {
+          const donationAmount = Number(donation.amount);
+
+          campaign.collectedAmount = Number(campaign.collectedAmount) + donationAmount;
+
+          campaign.remainingAmount = Math.max(0,
+            Number(campaign.goalAmount) - Number(campaign.collectedAmount),
+          );
+
+          await manager.save(CampaignEntity, campaign);
+        }
+      }
+
+      return donation;
+    });
+  }
 
   async markAsFailed(donatiionId: string) {
     const donation = await this.donationRep.findOne({
