@@ -202,14 +202,13 @@ export class DonationService {
   ) {
     return await this.dataSource.transaction(async (manager) => {
 
-      const donation = await manager.findOne(DonationEntity, {
-        where: { id: donationId },
-        relations: {
-          campaign: true,
-          serviceGift: true,
-        },
-        lock: { mode: 'pessimistic_write' },
-      });
+      const donation = await manager
+        .createQueryBuilder(DonationEntity, 'donation')
+        .leftJoinAndSelect('donation.campaign', 'campaign')
+        .leftJoinAndSelect('donation.serviceGift', 'serviceGift')
+        .where('donation.id = :donationId', { donationId })
+        .setLock('pessimistic_write', undefined, ['donation'])
+        .getOne();
 
       if (!donation) {
         throw new NotFoundException('Donation Not Found');
